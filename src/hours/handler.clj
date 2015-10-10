@@ -70,13 +70,22 @@
 (defn display-week [week]
   [:div
    (display-week-chooser (first week))
-   [:table
+   [:table {:border "1"}
    [:tbody
     [:tr
-     [:th "Date"]]
+     [:th "Date"] [:th "From"] [:th "To"] [:th "Sum"] [:th "Extra"] [:th "Iterate"] [:th "Total"] [:th "&nbsp;"]]
     (for [day week]
-      [:tr
-       [:td (f/unparse custom-formatter day)]])]]])
+      [:form {:method "POST" :action (str "/register/" (f/unparse (f/formatters :basic-date) day))}
+       (anti-forgery-field)
+       [:tr
+        [:td (f/unparse custom-formatter day)]
+        [:td [:input {:type "text" :name "from"}]]
+        [:td [:input {:type "text" :name "to"}]]
+        [:td "&nbsp;"]
+        [:td [:input {:type "text" :name "extra"}]]
+        [:td [:input {:type "text" :name "iterate"}]]
+        [:td "&nbsp;"]
+        [:td [:input {:type "submit" :value "Go"}]]]])]]])
 
 (defn display-hours [hours]
   [:table
@@ -125,12 +134,23 @@
   (reset! current {})
   (page-template  (start-stop "start" (display-hours @hours)) ))
 
+(defn ->dt [date hour]
+  (let [fmt (f/formatter "yyyyMMddHH:mm")]
+    (f/parse fmt (str date hour))))
+
+(defn add-interval [date from to extra iterate]
+  (add-hours {:start (->dt date from)
+              :stop  (->dt date to)
+              :extra extra
+              :iterate iterate}))
+
 (defroutes app-routes
   (GET "/" [] (page-template  (start-stop "start" (display-hours @hours))))
   (GET "/week" [] (page-template (display-week (week (t/now)))))
   (GET "/week/:date" [date] (page-template (display-week (week (f/parse (f/formatters :basic-date) date)))))
   (POST "/register/start" [] (start))
-  (POST "/register/stop" [] (stop))  
+  (POST "/register/stop" [] (stop))
+  (POST "/register/:date" [date from to extra iterate] (page-template (display-hours (add-interval date from to extra iterate))))    
   (route/not-found "not found"))
 
 (def app
