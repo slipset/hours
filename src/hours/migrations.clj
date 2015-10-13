@@ -4,7 +4,7 @@
               [environ.core :refer [env]]))
 
 (def config
-  {:datastore   (jdbc/sql-database {:connection-uri (env :database-url)}) ;; 
+  {:datastore   (jdbc/sql-database {:connection-uri (env :jdbc-database-url)}) ;; 
    :migrations (jdbc/load-resources "migrations")})
 
 (defn migrate []
