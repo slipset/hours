@@ -16,7 +16,8 @@
       [friend-oauth2.util     :refer [format-config-uri]]
       [environ.core           :refer [env]]
       [clj-http.client :as client]
-      [cheshire.core :as parse]))
+      [cheshire.core :as parse])
+    (:gen-class))
 
 (def client-config
   {:client-id     (env :hours-oauth2-client-id)
