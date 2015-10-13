@@ -211,15 +211,15 @@
                    ]})
 
 (def app
-  (->  #'app-routes
+  (-> #'app-routes
       (friend/authenticate friend-config)
       handler/site))
 
 (defn start [port]
-  (ring/run-jetty #'app {:port port
+  (run-jetty #'app {:port port
                          :join? false}))
 
 (defn -main []
-  (schema/migrate)
+  ;(schema/migrate)
   (let [port (Integer. (or (env :port) "3000"))]
     (start port)))
