@@ -19,6 +19,12 @@
       [cheshire.core :as parse])
     (:gen-class))
 
+(def hours (atom []))
+
+(def current (atom {}))
+
+(def logged-in-user (atom {}))
+
 (def client-config
   {:client-id     (env :hours-oauth2-client-id)
    :client-secret (env :hours-oauth2-client-secret)
@@ -32,9 +38,11 @@
         (parse/parse-string)))
 
 (defn credential-fn [token]
-  {:identity token
-   :user-info (google-user-details (:access-token token))
-   :roles #{::user}})
+  (let [userinfo (google-user-details (:access-token token))]
+    (reset! logged-in-user userinfo)
+    {:identity token
+     :user-info userinfo
+     :roles #{::user}}))
 
 (def uri-config
   {:authentication-uri {:url "https://accounts.google.com/o/oauth2/auth"
@@ -48,10 +56,6 @@
                               :client_secret (:client-secret client-config)
                               :grant_type "authorization_code"
                               :redirect_uri (format-config-uri client-config)}}})
-
-(def hours (atom []))
-
-(def current (atom {}))
 
 (defn add-hours [m]
   (swap! hours conj m))
@@ -93,7 +97,7 @@
   {date {:start (:start (first periods)) :stop (:stop (last periods))}})
 
 (defn by-date [hours]
-  (let [days (group-by (fn [period] (f/unparse custom-formatter (:start period))) hours)]
+  (let [days (group-by (fn [period] (vector (f/unparse custom-formatter (:start period)) (:project period))) hours)]
     (mapcat find-total-by-day days)))
 
 (defn display-week-chooser [mon]
@@ -106,13 +110,18 @@
      [:a {:href (str "/week/" (f/unparse (f/formatters :basic-date) next )) } (.getWeekOfWeekyear next) ]
      ]))
 
+
+
+(defn display-user [userinfo]
+  [:div (get userinfo "name") [:img {:src (get userinfo "picture")}]])
+
 (defn display-week [week]
   [:div
    (display-week-chooser (first week))
    [:table {:border "1"}
    [:tbody
     [:tr
-     [:th "Date"] [:th "From"] [:th "To"] [:th "Sum"] [:th "Extra"] [:th "Iterate"] [:th "Total"] [:th "&nbsp;"]]
+     [:th "Date"] [:th "Project"][:th "From"] [:th "To"] [:th "Sum"] [:th "Extra"] [:th "Iterate"] [:th "Total"] [:th "&nbsp;"]]
     (for [day week]
       [:form {:method "POST" :action (str "/register/" (f/unparse (f/formatters :basic-date) day))}
        (anti-forgery-field)
@@ -131,6 +140,7 @@
    [:tbody
     [:tr
      [:th "Date"]
+     [:th "Project"]     
      [:th "Start"]
      [:th "End"]
      [:th "Total"]]
@@ -139,7 +149,8 @@
             stop (:stop (second hour) )
             diff (t/interval start stop)]
         [:tr
-         [:td  (first hour)]
+         [:td  (first (first hour))]
+         [:td  (second (first hour))]         
           [:td (f/unparse (f/formatters :hour-minute) start) ]
           [:td (f/unparse (f/formatters :hour-minute) stop) ]
           [:td (format-interval (->hour-mins diff))]
@@ -150,7 +161,9 @@
   [:div [:form {:method "POST" :action (str "/register/" action) }
    (anti-forgery-field)
    [:tr
-    [:td.submit {:colspan 2}
+    [:td.submit
+     (when (= action "start")
+       [:input {:type "text" :name "project"}])
      [:input {:type "submit" :value action}]]]]
    content])
 
@@ -159,11 +172,12 @@
    [:head
     [:title "hours"]]
    [:body
+    (display-user @logged-in-user)
     [:h1 [:a {:href "/"} "hours"]]
     [:div.content content]]))
 
-(defn start []
-  (swap! current assoc :start (trunc-seconds (t/now)))
+(defn start [project]
+  (swap! current assoc :start (trunc-seconds (t/now)) :project project)
   (page-template (start-stop "stop" (display-hours @hours))))
 
 (defn stop []
@@ -196,7 +210,7 @@
 
   (GET "/week" [] (page-template (display-week (week (t/now)))))
   (GET "/week/:date" [date] (page-template (display-week (week (f/parse (f/formatters :basic-date) date)))))
-  (POST "/register/start" [] (start))
+  (POST "/register/start" [project] (start project))
   (POST "/register/stop" [] (stop))
   (POST "/register/:date" [date from to extra iterate] (page-template (display-hours (add-interval date from to extra iterate))))
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
