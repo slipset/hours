@@ -1,0 +1,2 @@
+{:up ["CREATE TABLE workday_user (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), first_name text, last_name text, email text);"]
+ :down ["DROP TABLE workday_user;"]}

@@ -1,0 +1,2 @@
+{:up ["CREATE EXTENSION \"uuid-ossp\";"]
+ :down ["DROP EXTENSION \"uuid-ossp\";"]}

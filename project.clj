@@ -15,7 +15,9 @@
                  [cheshire "5.5.0"]
                  [clj-http "2.0.0"]
                  [ring-mock "0.1.5"]
-                 [hiccup-bootstrap "0.1.2"]]
+                 [hiccup-bootstrap "0.1.2"]
+                 [ragtime "0.5.2"]
+                 [postgresql "9.3-1102.jdbc4"]]
    
   :plugins [[lein-ring "0.9.7"] [lein-environ "1.0.1"]]
    :ring {:handler hours.handler/app}

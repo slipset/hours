@@ -18,7 +18,8 @@
       [friend-oauth2.util     :refer [format-config-uri]]
       [environ.core           :refer [env]]
       [clj-http.client :as client]
-      [cheshire.core :as parse])
+      [cheshire.core :as parse]
+      [hours.migrations :as migrations])
     (:gen-class))
 
 (def hours (atom []))
@@ -251,6 +252,6 @@
                          :join? false}))
 
 (defn -main []
-  ;(schema/migrate)
+  (migrations/migrate)
   (let [port (Integer. (or (env :port) "3000"))]
     (start-jetty port)))
