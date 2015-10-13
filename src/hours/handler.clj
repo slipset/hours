@@ -22,7 +22,7 @@
 (def client-config
   {:client-id     (env :hours-oauth2-client-id)
    :client-secret (env :hours-oauth2-client-secret)
-   :callback      {:domain "http://localhost:3000" ;; replace this for production with the appropriate site URL
+   :callback      {:domain (env :hours-uri) ;; replace this for production with the appropriate site URL
                    :path "/oauth2callback"}})
 
 (defn google-user-details [token]
