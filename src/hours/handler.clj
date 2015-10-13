@@ -215,4 +215,11 @@
       (friend/authenticate friend-config)
       handler/site))
 
-(defonce server (run-jetty #'app {:port 3000 :join? false}))
+(defn start [port]
+  (ring/run-jetty #'app {:port port
+                         :join? false}))
+
+(defn -main []
+  (schema/migrate)
+  (let [port (Integer. (or (env :port) "3000"))]
+    (start port)))

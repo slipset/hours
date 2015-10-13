@@ -2,7 +2,7 @@
   :description "FIXME: write description"
    :url "http://example.com/FIXME"
    :repl-options {:init-ns hours.handler}
-    
+  :main  ^:skip-aot hours.handler  
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [ring/ring-jetty-adapter "1.4.0"]
@@ -16,7 +16,10 @@
                  [clj-http "2.0.0"]]
    
   :plugins [[lein-ring "0.9.7"] [lein-environ "1.0.1"]]
-  :ring {:handler hours.handler/app}
+   :ring {:handler hours.handler/app}
+  :uberjar-name "hours-standalone.jar"
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                        [ring-mock "0.1.5"]]}})
+                        [ring-mock "0.1.5"]]}
+   :uberjar {:aot :all}
+   })
