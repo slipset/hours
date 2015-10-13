@@ -114,8 +114,8 @@
 
 
 
-(defn display-user [userinfo]
-  [:div (get userinfo "name") [:img {:src (get userinfo "picture")}]])
+(defn display-user-nav-bar [userinfo]
+  [:div.pull-right (get userinfo "name") [:img {:src (get userinfo "picture") :width "40"}]])
 
 (defn display-week [week]
   [:div
@@ -138,7 +138,7 @@
         [:td [:input {:type "submit" :value "Go"}]]]])]]])
 
 (defn display-hours [hours]
-  [:table
+  [:table.table
    [:tbody
     [:tr
      [:th "Date"]
@@ -155,39 +155,51 @@
          [:td  (second (first hour))]         
           [:td (f/unparse (f/formatters :hour-minute) start) ]
           [:td (f/unparse (f/formatters :hour-minute) stop) ]
-          [:td (format-interval (->hour-mins diff))]
-          [:td ]])
-      )]])
+          [:td (format-interval (->hour-mins diff))]]))]])
 
-(defn start-stop [action content]
-  [:div [:form {:method "POST" :action (str "/register/" action) }
-   (anti-forgery-field)
-   [:tr
-    [:td.submit
-     (when (= action "start")
-       [:input {:type "text" :name "project"}])
-     [:input {:type "submit" :value action}]]]]
+(defn start-stop [action project content]
+  [:div [:form.form-inline {:method "POST" :action (str "/register/" action) }
+         (anti-forgery-field)
+         [:fieldset
+          (if (= action "start")
+            [:input {:type "text" :name "project" :placeholder "Project name..."}]
+            [:input {:type "text" :name "project" :value project :readonly "readonly"}])
+          [:button.btn {:type "submit" :value action} action]]]
    content])
 
 (defn page-template [content]
   (html5
    [:head
+    [:script {:src "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"}]
     [:title "hours"]
     (include-bootstrap)]
    [:body
-    (display-user @logged-in-user)
-    [:h1 [:a {:href "/"} "hours"]]
-    [:div.content content]]))
+    [:div.navbar.navbar-inverse.navbar-fixed-top
+     [:div.navbar-inner
+      [:div.container
+       [:button.btn.btn-navbar {:type "button" :data-toggle "collapse" :data-target ".nav-collapse"}
+        [:span.icon-bar]
+        [:span.icon-bar]
+        [:span.icon-bar]]
+       [:a.brand {:href "/"} "workday"]
+       (display-user-nav-bar @logged-in-user)
+       [:div.nav-collapse.collapse
+        [:ul.nav
+         [:li.active [:a {:href "/"} "Home"]]
+         [:li [:a {:href "/logout"} "Logout"]]
+         [:li [:a {:href "#contact"} "Contact"]]]]
+       ]]]
+    [:div.container content]]))
 
 (defn start [project]
   (swap! current assoc :start (trunc-seconds (t/now)) :project project)
-  (page-template (start-stop "stop" (display-hours @hours))))
+  (page-template (start-stop "stop" project (display-hours @hours))))
 
 (defn stop []
   (swap! current assoc :stop (trunc-seconds (t/now)))
   (add-hours @current)
   (reset! current {})
-  (page-template  (start-stop "start" (display-hours @hours)) ))
+  (page-template  (start-stop "start" "" (display-hours @hours))))
 
 (defn ->dt [date hour]
   (let [fmt (f/formatter "yyyyMMddHH:mm")]
@@ -200,7 +212,7 @@
               :iterate iterate}))
 
 (defroutes app-routes
-  (GET "/" [] (page-template  (start-stop "start" (display-hours @hours))))
+  (GET "/" [] (page-template  (start-stop "start" "" (display-hours @hours))))
   (GET "/authlink" request
        (friend/authorize #{::user} "Authorized page."))
   (GET "/status" request
