@@ -216,11 +216,11 @@
       (friend/authenticate friend-config)
       handler/site))
 
-(defn start [port]
+(defn start-jetty  [port]
   (run-jetty #'app {:port port
                          :join? false}))
 
 (defn -main []
   ;(schema/migrate)
   (let [port (Integer. (or (env :port) "3000"))]
-    (start port)))
+    (start-jetty port)))
