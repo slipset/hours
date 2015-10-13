@@ -5,6 +5,8 @@
       [clojure.java.io :as io]
       [hiccup.core :refer [html]]
       [hiccup.page :refer [html5 include-js include-css]]
+      [hiccup.bootstrap.middleware :refer [wrap-bootstrap-resources]]
+      [hiccup.bootstrap.page :refer [include-bootstrap]]
       [ring.adapter.jetty :refer [run-jetty]]
       [ring.util.anti-forgery :refer [anti-forgery-field]]
       [compojure.core :refer :all]
@@ -170,7 +172,8 @@
 (defn page-template [content]
   (html5
    [:head
-    [:title "hours"]]
+    [:title "hours"]
+    (include-bootstrap)]
    [:body
     (display-user @logged-in-user)
     [:h1 [:a {:href "/"} "hours"]]
@@ -227,8 +230,9 @@
 
 (def app
   (-> #'app-routes
-      (friend/authenticate friend-config)
-      handler/site))
+        (friend/authenticate friend-config)
+        (wrap-bootstrap-resources)
+        handler/site))
 
 (defn start-jetty  [port]
   (run-jetty #'app {:port port

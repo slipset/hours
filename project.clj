@@ -14,7 +14,8 @@
                  [environ "0.3.1"]
                  [cheshire "5.5.0"]
                  [clj-http "2.0.0"]
-                 [ring-mock "0.1.5"]]
+                 [ring-mock "0.1.5"]
+                 [hiccup-bootstrap "0.1.2"]]
    
   :plugins [[lein-ring "0.9.7"] [lein-environ "1.0.1"]]
    :ring {:handler hours.handler/app}
