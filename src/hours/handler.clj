@@ -114,9 +114,6 @@
      [:a {:href (str "/user/week/" (f/unparse (f/formatters :basic-date) next )) } (.getWeekOfWeekyear next) ]
      ]))
 
-
-
-
 (defn display-week [week]
   [:div
    (display-week-chooser (first week))
@@ -192,7 +189,7 @@
         [:span.icon-bar]
         [:span.icon-bar]
         [:span.icon-bar]]
-       [:a.navbar-brand {:href "/"} "workday"]]
+       [:a.navbar-brand {:href "/user"} "workday"]]
       [:div.collapse.navbar-collapse {:id "myNavbar"}
        [:ul.nav.navbar-nav
         [:li [:a {:href "/user"} "Home"]]
