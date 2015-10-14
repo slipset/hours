@@ -193,7 +193,7 @@
       [:div.collapse.navbar-collapse {:id "myNavbar"}
        [:ul.nav.navbar-nav
         [:li [:a {:href "/user"} "Home"]]
-        [:li [:a {:href "#contact"} "Contact"]]]
+        [:li [:a {:href "/user/status"} "Status"]]]
        [:ul.nav.navbar-nav.navbar-right
         (display-user-nav-bar @logged-in-user)
         [:li [:a {:href "/logout"} [:span.glyphicon.glyphicon-log-out] "Logout"]]]
@@ -243,8 +243,18 @@
               :extra extra
               :iterate iterate}))
 
+(defn display-status [request]
+  (let [count (:count (:session request) 0)
+        session (assoc (:session request) :count (inc count))]
+    (-> (ring.util.response/response
+              (page-template
+               (str "<p>We've hit the session page " (:count session)
+                    " times.</p><p>The current session: " session "</p>")))
+        (assoc :session session))))
+
 (defroutes secure-routes
   (GET "/" [] (page-template  (start-stop "start" "" (display-hours @hours))))
+  (GET "/status" request (display-status request))
   (GET "/week" [] (page-template (display-week (week (t/now)))))
   (GET "/week/:date" [date] (page-template (display-week (week (f/parse (f/formatters :basic-date) date)))))
   (POST "/register/start" [project] (start project))
@@ -259,15 +269,7 @@
 
 (defroutes app-routes
   (GET "/" [] (login-page))
-  (context "/user" request
-    (friend/wrap-authorize secure-routes #{::user}))
-  (GET "/status" request
-       (let [count (:count (:session request) 0)
-             session (assoc (:session request) :count (inc count))]
-         (-> (ring.util.response/response
-              (str "<p>We've hit the session page " (:count session)
-                   " times.</p><p>The current session: " session "</p>"))
-             (assoc :session session))))
+  (context "/user" request (friend/wrap-authorize secure-routes #{::user}))
 
   
   (friend/logout (ANY "/logout" request (logout)))
