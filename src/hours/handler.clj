@@ -7,6 +7,7 @@
       [hiccup.page :refer [html5 include-js include-css]]
       [hiccup.bootstrap.middleware :refer [wrap-bootstrap-resources]]
       [hiccup.bootstrap.page :refer [include-bootstrap]]
+      [ring.middleware.file :refer [wrap-file]]
       [ring.adapter.jetty :refer [run-jetty]]
       [ring.util.anti-forgery :refer [anti-forgery-field]]
       [compojure.core :refer :all]
@@ -115,8 +116,6 @@
 
 
 
-(defn display-user-nav-bar [userinfo]
-  [:div.pull-right (get userinfo "name") [:img {:src (get userinfo "picture") :width "40"}]])
 
 (defn display-week [week]
   [:div
@@ -159,38 +158,73 @@
           [:td (format-interval (->hour-mins diff))]]))]])
 
 (defn start-stop [action project content]
-  [:div [:form.form-inline {:method "POST" :action (str "/user/register/" action) }
-         (anti-forgery-field)
-         [:fieldset
-          (if (= action "start")
-            [:input {:type "text" :name "project" :placeholder "Project name..."}]
-            [:input {:type "text" :name "project" :value project :readonly "readonly"}])
-          [:button.btn {:type "submit" :value action} action]]]
+  [:div
+   [:form {:method "POST" :action (str "/user/register/" action) }
+    (anti-forgery-field)
+    [:div.input-group
+     (if (= action "start")
+       [:input.form-control {:type "text" :name "project" :placeholder "Project name..."}]
+       [:input.form-control {:type "text" :name "project" :value project :readonly "readonly"}])
+     [:span.input-group-btn
+      [:button.btn.btn-default {:type "submit" :value action} action]]
+     ]]
    content])
+
+(defn include-styling []
+  (list [:script {:src "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"}]
+  (include-css  "/css/bootstrap.min.css" "/css/bootstrap-social.css" "/css/font-awesome.min.css")
+  (include-js "/js/bootstrap.min.js" )))
+
+(defn display-user-nav-bar [userinfo]
+  [:li [:p.navbar-text (get userinfo "name") "&nbsp;" [:img {:src (get userinfo "picture") :width "20"}]]])
 
 (defn page-template [content]
   (html5
    [:head
-    [:script {:src "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"}]
+   ; [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0, user-scalable=no"}]
     [:title "hours"]
-    (include-bootstrap)]
+    (include-styling)]
    [:body
-    [:div.navbar.navbar-inverse.navbar-fixed-top
-     [:div.navbar-inner
-      [:div.container
-       [:button.btn.btn-navbar {:type "button" :data-toggle "collapse" :data-target ".nav-collapse"}
+    [:nav.navbar.navbar-inverse
+     [:div.container-fluid
+      [:div.navbar-header
+       [:button.navbar-toggle {:type "button" :data-toggle "collapse" :data-target "#myNavbar"}
         [:span.icon-bar]
         [:span.icon-bar]
         [:span.icon-bar]]
-       [:a.brand {:href "/"} "workday"]
-       (display-user-nav-bar @logged-in-user)
-       [:div.nav-collapse.collapse
-        [:ul.nav
-         [:li.active [:a {:href "/user"} "Home"]]
-         [:li [:a {:href "/logout"} "Logout"]]
-         [:li [:a {:href "#contact"} "Contact"]]]]
+       [:a.navbar-brand {:href "/"} "workday"]]
+      [:div.collapse.navbar-collapse {:id "myNavbar"}
+       [:ul.nav.navbar-nav
+        [:li [:a {:href "/user"} "Home"]]
+        [:li [:a {:href "#contact"} "Contact"]]]
+       [:ul.nav.navbar-nav.navbar-right
+        (display-user-nav-bar @logged-in-user)
+        [:li [:a {:href "/logout"} [:span.glyphicon.glyphicon-log-out] "Logout"]]]
        ]]]
-    [:div.container content]]))
+    [:div.container content]
+    [:div.row
+     ]]))
+
+(defn login-page []
+  (html5
+   [:head
+    [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0, user-scalable=no"}]
+    [:title "hours"]
+    (include-styling)]
+   [:body
+    [:nav.navbar.navbar-inverse {:role "banner"}
+     [:div.container-fluid
+      [:div.navbar-header
+       [:a.navbar-brand {:href "/"} "workday"]]]]
+
+    [:div.container
+     [:div.page-header
+      [:h1 "Sign in"]]
+     [:div.row
+      [:div.col-lg-4.col-lg-offset-4.col-md-4.col-md-offset-4.col-sm-6.col-sm-offset-3
+       [:a.btn.btn-block.btn-social.btn-google {:href  "/user/"}
+        [:i.fa.fa-google] "Sign in with Google" ]]]]]))
+
 
 (defn start [project]
   (swap! current assoc :start (trunc-seconds (t/now)) :project project)
@@ -221,6 +255,7 @@
   (POST "/register/:date" [date from to extra iterate] (page-template (display-hours (add-interval date from to extra iterate)))))
 
 (defroutes app-routes
+  (GET "/" [] (login-page))
   (context "/user" request
     (friend/wrap-authorize secure-routes #{::user}))
   (GET "/status" request
@@ -248,6 +283,7 @@
   (-> #'app-routes
         (friend/authenticate friend-config)
         (wrap-bootstrap-resources)
+        (wrap-file "resources/public")
         handler/site))
 
 (defn start-jetty  [port]
