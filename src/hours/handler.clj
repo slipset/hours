@@ -106,11 +106,11 @@
 (defn display-week-chooser [mon]
   (let [prev (prev-week mon)
         next (next-week mon)]
-    [:div "Uke " [:a {:href (str "/week/" (f/unparse (f/formatters :basic-date) prev )) } (.getWeekOfWeekyear prev) ]
+    [:div "Uke " [:a {:href (str "/user/week/" (f/unparse (f/formatters :basic-date) prev )) } (.getWeekOfWeekyear prev) ]
      " "
      (.getWeekOfWeekyear mon)
      " "
-     [:a {:href (str "/week/" (f/unparse (f/formatters :basic-date) next )) } (.getWeekOfWeekyear next) ]
+     [:a {:href (str "/user/week/" (f/unparse (f/formatters :basic-date) next )) } (.getWeekOfWeekyear next) ]
      ]))
 
 
@@ -126,7 +126,7 @@
     [:tr
      [:th "Date"] [:th "Project"][:th "From"] [:th "To"] [:th "Sum"] [:th "Extra"] [:th "Iterate"] [:th "Total"] [:th "&nbsp;"]]
     (for [day week]
-      [:form {:method "POST" :action (str "/register/" (f/unparse (f/formatters :basic-date) day))}
+      [:form {:method "POST" :action (str "/user/register/" (f/unparse (f/formatters :basic-date) day))}
        (anti-forgery-field)
        [:tr
         [:td (f/unparse custom-formatter day)]
@@ -159,7 +159,7 @@
           [:td (format-interval (->hour-mins diff))]]))]])
 
 (defn start-stop [action project content]
-  [:div [:form.form-inline {:method "POST" :action (str "/register/" action) }
+  [:div [:form.form-inline {:method "POST" :action (str "/user/register/" action) }
          (anti-forgery-field)
          [:fieldset
           (if (= action "start")
@@ -186,7 +186,7 @@
        (display-user-nav-bar @logged-in-user)
        [:div.nav-collapse.collapse
         [:ul.nav
-         [:li.active [:a {:href "/"} "Home"]]
+         [:li.active [:a {:href "/user"} "Home"]]
          [:li [:a {:href "/logout"} "Logout"]]
          [:li [:a {:href "#contact"} "Contact"]]]]
        ]]]
@@ -212,10 +212,17 @@
               :extra extra
               :iterate iterate}))
 
-(defroutes app-routes
+(defroutes secure-routes
   (GET "/" [] (page-template  (start-stop "start" "" (display-hours @hours))))
-  (GET "/authlink" request
-       (friend/authorize #{::user} "Authorized page."))
+  (GET "/week" [] (page-template (display-week (week (t/now)))))
+  (GET "/week/:date" [date] (page-template (display-week (week (f/parse (f/formatters :basic-date) date)))))
+  (POST "/register/start" [project] (start project))
+  (POST "/register/stop" [] (stop))
+  (POST "/register/:date" [date from to extra iterate] (page-template (display-hours (add-interval date from to extra iterate)))))
+
+(defroutes app-routes
+  (compojure/context "/user" request
+    (friend/wrap-authorize secure-routes #{::user}))
   (GET "/status" request
        (let [count (:count (:session request) 0)
              session (assoc (:session request) :count (inc count))]
@@ -224,11 +231,7 @@
                    " times.</p><p>The current session: " session "</p>"))
              (assoc :session session))))
 
-  (GET "/week" [] (page-template (display-week (week (t/now)))))
-  (GET "/week/:date" [date] (page-template (display-week (week (f/parse (f/formatters :basic-date) date)))))
-  (POST "/register/start" [project] (start project))
-  (POST "/register/stop" [] (stop))
-  (POST "/register/:date" [date from to extra iterate] (page-template (display-hours (add-interval date from to extra iterate))))
+  
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
   (route/not-found "not found"))
 
