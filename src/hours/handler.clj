@@ -221,7 +221,7 @@
   (POST "/register/:date" [date from to extra iterate] (page-template (display-hours (add-interval date from to extra iterate)))))
 
 (defroutes app-routes
-  (compojure/context "/user" request
+  (context "/user" request
     (friend/wrap-authorize secure-routes #{::user}))
   (GET "/status" request
        (let [count (:count (:session request) 0)
