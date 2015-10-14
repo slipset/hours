@@ -251,6 +251,12 @@
   (POST "/register/stop" [] (stop))
   (POST "/register/:date" [date from to extra iterate] (page-template (display-hours (add-interval date from to extra iterate)))))
 
+(defn logout []
+  (reset! logged-in-user {})
+  (reset! current {})
+  (reset! hours {})
+  (ring.util.response/redirect "/"))
+
 (defroutes app-routes
   (GET "/" [] (login-page))
   (context "/user" request
@@ -264,7 +270,7 @@
              (assoc :session session))))
 
   
-  (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
+  (friend/logout (ANY "/logout" request (logout)))
   (route/not-found "not found"))
 
 (def friend-config
