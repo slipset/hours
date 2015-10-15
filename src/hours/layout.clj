@@ -7,6 +7,7 @@
       [clj-time.core :as t]
       [clj-time.format :as f]
       [hours.time :as time]
+      [hours.security :as security]
       ))
 
 (defn display-week-chooser [mon]
@@ -146,14 +147,11 @@
       [:tr
        [:td (:name client)]])]])
 
-(defn user-id-kw [user]
-  (keyword (get user "email")))
-
 (defn show-week-page [logged-in-user date]
   (page-template logged-in-user (display-week (time/week (f/parse (f/formatters :basic-date) date)))))
 
 (defn show-hours-page [logged-in-user action content hours]
-  (page-template logged-in-user (start-stop action content (display-hours hours (user-id-kw logged-in-user)))))
+  (page-template logged-in-user (start-stop action content (display-hours hours (security/user-id-kw)))))
 
 (defn show-clients-page [logged-in-user clients]
   (page-template logged-in-user (display-clients clients)))

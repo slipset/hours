@@ -32,7 +32,7 @@
 
 (defn stop []
   (swap! current assoc :stop (time/trunc-seconds (t/now)))
-  (add-hours @current (user-id-kw (security/logged-in-user)))
+  (add-hours @current (security/user-id-kw))
   (reset! current {})
   (layout/show-hours-page (security/logged-in-user) "start" "" @hours))
 
