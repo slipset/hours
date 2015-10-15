@@ -1,5 +1,6 @@
 (ns hours.handler
     (:require
+      [clojure.java.jdbc :as sql]
       [ring.middleware.file :refer [wrap-file]]
       [ring.adapter.jetty :refer [run-jetty]]
       [compojure.core :refer :all]
@@ -11,8 +12,11 @@
       [hours.time :as time]
       [hours.layout :as layout]
       [hours.migrations :as migrations]
-      [hours.security :as security])
+      [hours.security :as security]
+      )
     (:gen-class))
+
+(def db-spec {:connection-uri (env :jdbc-database-url)})
 
 (def hours (atom {}))
 
@@ -43,7 +47,7 @@
   (reset! current {})
   (ring.util.response/redirect "/"))
 
-(defroutes secure-routes
+(defroutes user-routes
   (GET "/" [] (layout/show-hours-page (security/logged-in-user) "start" "" @hours))
   (GET "/status" request (layout/show-status-page (security/logged-in-user) request))
   (GET "/week" [] (layout/show-week-page (security/logged-in-user) (t/now)))
@@ -53,15 +57,19 @@
   (POST "/register/:date" [date from to extra iterate] (layout/page-template (security/logged-in-user)
                                                                              (layout/display-hours (add-interval date from to extra iterate)))))
 
+(defroutes client-routes
+  (GET "/" [] (layout/show-clients-page (security/logged-in-user) (hours.client/all-clients {} {:connection db-spec}))))
+
 (defroutes app-routes
   (GET "/" [] (layout/login-page))
-  (context "/user" request (friend/wrap-authorize secure-routes #{security/user}))
+  (context "/user" request (friend/wrap-authorize user-routes #{security/user}))
+  (context "/client" request (friend/wrap-authorize client-routes #{security/user}))
   (friend/logout (ANY "/logout" request (logout)))
   (route/not-found "not found"))
 
 (def app
   (-> #'app-routes
-        (friend/authenticate security/friend-config)
+        (friend/authenticate (security/friend-config db-spec))
         (wrap-file "resources/public")
         handler/site))
 

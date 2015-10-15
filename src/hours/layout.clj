@@ -96,7 +96,8 @@
       [:div.collapse.navbar-collapse {:id "myNavbar"}
        [:ul.nav.navbar-nav
         [:li [:a {:href "/user"} "Home"]]
-        [:li [:a {:href "/user/status"} "Status"]]]
+        [:li [:a {:href "/user/status"} "Status"]]
+        [:li [:a {:href "/client"} "Clients"]]]
        [:ul.nav.navbar-nav.navbar-right
         (display-user-nav-bar logged-in-user)
         [:li [:a {:href "/logout"} [:span.glyphicon.glyphicon-log-out] "Logout"]]]
@@ -109,7 +110,7 @@
   (html5
    [:head
     [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0, user-scalable=no"}]
-    [:title "hours"]
+    [:title "hours"]4
     (include-styling)]
    [:body
     [:nav.navbar.navbar-inverse {:role "banner"}
@@ -134,6 +135,15 @@
                     " times.</p><p>The current session: " session "</p>")))
         (assoc :session session))))
 
+(defn display-clients [clients]
+  [:table.table
+   [:tbody
+    [:tr
+     [:th "Name"]]
+    (for [client clients]
+      [:tr
+       [:td (:name client)]])]])
+
 (defn user-id-kw [user]
   (keyword (get user "email")))
 
@@ -142,3 +152,6 @@
 
 (defn show-hours-page [logged-in-user action content hours]
   (page-template logged-in-user (start-stop action content (display-hours hours (user-id-kw logged-in-user)))))
+
+(defn show-clients-page [logged-in-user clients]
+  (page-template logged-in-user (display-clients clients)))

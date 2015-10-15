@@ -1,0 +1,2 @@
+{:up ["ALTER TABLE workday_client add column workday_user_id UUID references workday_user(id);"]
+ :down ["ALTER TABLE workday_client drop column workday_user_id;"]}

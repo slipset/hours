@@ -4,11 +4,13 @@
       [friend-oauth2.util     :refer [format-config-uri]]
       [environ.core           :refer [env]]
       [clj-http.client :as client]
+      [hours.user :as user]
       [cheshire.core :as parse]))
 
 (def current-user (atom {}))
 
 (def user ::user)
+
 (def client-config
   {:client-id     (env :hours-oauth2-client-id)
    :client-secret (env :hours-oauth2-client-secret)
@@ -21,11 +23,22 @@
        :body
         (parse/parse-string)))
 
-(defn credential-fn [token]
-  (let [userinfo (google-user-details (:access-token token))]
-    (reset! current-user userinfo)
+(defn get-or-create-user-id [db-spec user-info]
+  (let [email (get user-info "email")
+        user-id (user/user-by-email {:email email} {:connection db-spec})]
+    (if (seq user-id) 
+      (first user-id) 
+      (first  (user/add-user<! {:first_name (get user-info "given_name")
+                                :last_name (get user-info "family_name")
+                                :email email} {:connection db-spec})))))
+
+(defn credential-fn [db-spec token]
+  (let [user-info (google-user-details (:access-token token))
+        user-id (:id (get-or-create-user-id db-spec user-info))]
+
+    (reset! current-user (assoc user-info :workday-id user-id))
     {:identity token
-     :user-info userinfo
+     :user-info user-info
      :roles #{::user}}))
 
 (def uri-config
@@ -41,12 +54,12 @@
                               :grant_type "authorization_code"
                               :redirect_uri (format-config-uri client-config)}}})
 
-(def friend-config
+(defn friend-config [db-spec]
   {:allow-anon? true
    :workflows   [(oauth2/workflow
                   {:client-config client-config
                    :uri-config uri-config
-                   :credential-fn credential-fn})
+                   :credential-fn (partial credential-fn db-spec)})
                    ]})
 
 (defn logout []

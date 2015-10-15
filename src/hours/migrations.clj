@@ -9,6 +9,3 @@
 
 (defn migrate []
   (repl/migrate config))
-
-
-
