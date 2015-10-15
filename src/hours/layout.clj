@@ -45,7 +45,7 @@
   [:form {:method "POST" :action (str "/period/" (:id period))}
    [:input {:type "hidden" :name "date" :id "date" :value (time/->date-str (c/from-sql-time (:period_start period)))}]
    [:input {:type "hidden" :name "project" :id "project" :value (:name_2 period)}]
-   [:input {:type "hidden" :name "start" :id "start" :value (time/->hh:mm-str (c/from-date (:period_start period)))}]
+   [:input {:type "hidden" :name "start" :id "start" :value (time/->hh:mm-str (c/from-date (:start period)))}]
    [:div.input-group.col-xs-3
     [:input.form-control {:type "text" :name "end" :size "5" :maxlength "5"}]
     [:span.input-group-btn
@@ -218,7 +218,7 @@
   (page-template logged-in-user (display-week (time/week (f/parse (f/formatters :basic-date) date)))))
 
 (defn show-hours-page [logged-in-user action content period-id periods]
-  (page-template logged-in-user (start-stop action period-id content (display-hours periods (security/user-id-kw)))))
+  (page-template logged-in-user (start-stop action period-id content (display-hours periods nil))))
 
 (defn show-clients-page [logged-in-user clients]
   (page-template logged-in-user (display-clients clients)))

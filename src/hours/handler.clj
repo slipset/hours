@@ -22,76 +22,71 @@
 
 (def db-spec {:connection {:connection-uri (env :jdbc-database-url)}})
 
-(def hours (atom {}))
+(defn start! [user project]
+  (let [user-id (:workday-id user)
+        period-id (period/start! db-spec user-id project)]
+    (ring.util.response/redirect (str "/user/register/stop/" period-id))))
 
-(def current (atom {}))
+(defn stop! [user period-id]
+  (let [user-id (:workday-id user)]
+    (period/stop! db-spec user-id period-id)
+    (ring.util.response/redirect "/user/register/start")))
 
-(defn add-hours [m u]
-  (swap! hours (fn [hours]
-                 (update-in hours [u] conj m))))
-
-(defn start [user-id project]
-  (let [project-id (:id (first (prjct/by-name {:name project :user_id user-id} db-spec)))
-        period-id (:id (period/start<! {:user_id user-id :project_id project-id :start (c/to-sql-time (t/now))} db-spec))]
-    (layout/show-hours-page (security/logged-in-user) "stop" project period-id (period/by-user {:user_id user-id} db-spec))))
-
-(defn stop [user-id period-id]
-  (period/end! {:id period-id :end (c/to-sql-time (t/now)) :user_id user-id} db-spec)
-  (layout/show-hours-page (security/logged-in-user) "start" "" nil (period/by-user {:user_id user-id} db-spec)))
-
-(defn add-client [name]
-  (client/add-client<! {:name name :user_id (security/user-id)} db-spec)
+(defn add-client! [user-id name]
+  (client/add-client<! {:name name :user_id user-id} db-spec)
   (ring.util.response/redirect "/client/"))
 
-(defn add-project [client-id name]
+(defn add-project! [client-id name]
   (prjct/add-project<! {:name name :client_id client-id} db-spec)
   (ring.util.response/redirect "/project/"))
 
-(defn edit-period [user-id id date start end project]
-  (let [start (time/->dt date start)
-        end (time/->dt date end)
-        project-id (:id (first (prjct/by-name {:name project :user_id user-id} db-spec)))]
-    (period/update! {:id id
-                     :project_id project-id
-                     :user_id user-id
-                     :start (c/to-sql-time start)
-                     :end (c/to-sql-time end)} db-spec)))
+(defn edit-period! [user-id id date start end project]
+  (period/edit-period! db-spec user-id id date start end project)
+  (ring.util.response/redirect "/user/register/start"))
 
-(defn logout []
-  (security/logout) 
-  (reset! current {})
-  (ring.util.response/redirect "/"))
+(defn show-start [user-info]
+  (layout/show-hours-page user-info "start" "" nil (period/by-user {:user_id (:workday-id user-info)} db-spec)))
+
+(defn show-stop [user-info period-id]
+  (layout/show-hours-page user-info "stop" "foo" period-id (period/by-user {:user_id (:workday-id user-info)} db-spec)))
+
+(defn show-projects [user-info client-id]
+  (layout/show-projects-page user-info
+                             (prjct/user-client-projects {:user_id (:workday-id user-info) :client_id client-id} db-spec)))
 
 (defroutes user-routes
-  (GET "/" [] (layout/show-hours-page (security/logged-in-user) "start" "" nil (period/by-user {:user_id (security/user-id)} db-spec)))
-  (GET "/status" request (layout/show-status-page (security/logged-in-user) request))
-  (GET "/week" [] (layout/show-week-page (security/logged-in-user) (t/now)))
-  (GET "/week/:date" [date] (layout/show-week-page (security/logged-in-user) date))
-  (POST "/register/start" [project] (start (security/user-id) project))
-  (POST "/register/stop" [period-id] (stop (security/user-id) period-id)))
+  (GET "/" request (ring.util.response/redirect "/user/register/start"))
+  (GET "/status" request (layout/show-status-page (security/user-info request) request))
+  (GET "/week" request (layout/show-week-page (security/user-info request) (t/now)))
+  (GET "/week/:date" [date :as r] (layout/show-week-page (security/user-info r) date))
+  (GET "/register/stop/:period-id" [period-id :as r] (show-stop (security/user-info r) period-id))
+  (GET "/register/start" request (show-start (security/user-info request)))
+  (POST "/register/start" [project :as r] (start! (security/user-info r) project))
+  (POST "/register/stop" [period-id :as r] (stop! (security/user-info r) period-id)))
 
 (defroutes client-routes
-  (GET "/" [] (layout/show-clients-page (security/logged-in-user) (client/user-clients {:user_id (security/user-id)} db-spec)))
-  (GET "/:client-id/projects" [client-id] (layout/show-projects-page (security/logged-in-user) (prjct/user-client-projects {:user_id (security/user-id)  :client_id client-id} db-spec)))
-  (GET "/add" [] (layout/show-add-client-page (security/logged-in-user)))
-  (POST "/add" [name] (add-client name)))
+  (GET "/" r (layout/show-clients-page (security/user-info r) (client/user-clients {:user_id (security/user-id r)} db-spec)))
+  (GET "/:client-id/projects" [client-id :as r] (show-projects (security/user-info r) client-id))
+  (GET "/add" r (layout/show-add-client-page (security/user-info r)))
+  (POST "/add" [name :as r] (add-client! (security/user-id r) name)))
 
 (defroutes project-routes
-  (GET "/" [] (layout/show-projects-page (security/logged-in-user) (prjct/user-projects {:user_id (security/user-id)} db-spec)))
-  (GET "/add/:client-id" [client-id] (layout/show-add-project-page (security/logged-in-user) (first (client/user-client {:user_id (security/user-id) :client_id client-id} db-spec))))
-  (POST "/add/:client-id" [client-id name] (add-project client-id name)))
+  (GET "/" r (layout/show-projects-page (security/user-info r) (prjct/user-projects {:user_id (security/user-id r)} db-spec)))
+  (GET "/add/:client-id" [client-id :as r] (layout/show-add-project-page (security/user-info r) (first (client/user-client {:user_id (security/user-id r) :client_id client-id} db-spec))))
+  (POST "/add/:client-id" [client-id name :as r] (add-project! client-id name)))
 
 (defroutes period-routes
-  (GET "/:id" [id] (layout/show-edit-period-page (security/logged-in-user) (first (period/by-id {:user_id (security/user-id) :id id} db-spec))))
-  (POST "/:id" [id date start end project] (edit-period (security/user-id) id date start end project)))
+  (GET "/:id" [id :as r] (layout/show-edit-period-page (security/user-info r) (first (period/by-id {:user_id (security/user-id r) :id id} db-spec))))
+  (POST "/:id" [id date start end project :as r] (edit-period! (security/user-id r) id date start end project)))
 
 (defroutes app-routes
   (GET "/" [] (layout/login-page))
+  (GET "/status" request (layout/show-status-page {} request))
   (context "/user" request (friend/wrap-authorize user-routes #{security/user}))
   (context "/client" request (friend/wrap-authorize client-routes #{security/user}))
   (context "/project" request (friend/wrap-authorize project-routes #{security/user}))
   (context "/period" request (friend/wrap-authorize period-routes #{security/user}))    
-  (friend/logout (ANY "/logout" request (logout)))
+  (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
   (route/not-found "not found"))
 
 (def app
