@@ -38,7 +38,7 @@
 
     (reset! current-user (assoc user-info :workday-id user-id))
     {:identity token
-     :user-info user-info
+     :user-info @current-user
      :roles #{::user}}))
 
 (def uri-config

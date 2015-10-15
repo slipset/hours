@@ -113,7 +113,7 @@
   (html5
    [:head
     [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0, user-scalable=no"}]
-    [:title "hours"]4
+    [:title "hours"]
     (include-styling)]
    [:body
     [:nav.navbar.navbar-inverse {:role "banner"}
