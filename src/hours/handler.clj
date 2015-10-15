@@ -11,6 +11,7 @@
       [clj-time.core :as t]
       [hours.time :as time]
       [hours.layout :as layout]
+      [hours.client :as client]      
       [hours.migrations :as migrations]
       [hours.security :as security]
       [environ.core :refer [env]])
@@ -58,7 +59,7 @@
                                                                              (layout/display-hours (add-interval date from to extra iterate)))))
 
 (defroutes client-routes
-  (GET "/" [] (layout/show-clients-page (security/logged-in-user) (hours.client/all-clients {} {:connection db-spec}))))
+  (GET "/" [] (layout/show-clients-page (security/logged-in-user) (client/all-clients {} {:connection db-spec}))))
 
 (defroutes app-routes
   (GET "/" [] (layout/login-page))
