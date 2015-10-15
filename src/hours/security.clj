@@ -25,7 +25,7 @@
 
 (defn get-or-create-user-id [db-spec user-info]
   (let [email (get user-info "email")
-        user-id (user/user-by-email {:email email} {:connection db-spec})]
+        user-id (user/user-by-email {:email email} db-spec)]
     (if (seq user-id) 
       (first user-id) 
       (first  (user/add-user<! {:first_name (get user-info "given_name")

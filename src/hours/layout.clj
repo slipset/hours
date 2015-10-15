@@ -6,6 +6,7 @@
       [ring.util.response]
       [clj-time.core :as t]
       [clj-time.format :as f]
+      [clj-time.coerce :as c]      
       [hours.time :as time]
       [hours.security :as security]
       ))
@@ -49,25 +50,27 @@
      [:th "Start"]
      [:th "End"]
      [:th "Total"]]
-    (for [hour (time/by-date (user-id hours))]
-      (let [start (:start (second hour) )
-            stop (:stop (second hour) )
+    (for [hour hours]
+      (let [start (c/from-sql-time (:period_start hour)) 
+            stop (c/from-sql-time (:period_end hour))
             diff (t/interval start stop)]
         [:tr
-         [:td  (first (first hour))]
-         [:td  (second (first hour))]         
-          [:td (f/unparse (f/formatters :hour-minute) start) ]
-          [:td (f/unparse (f/formatters :hour-minute) stop) ]
-          [:td (time/format-interval (time/->hour-mins diff))]]))]])
+         [:td  (f/unparse time/custom-formatter start)]
+         [:td  (str (:name_3 hour) "/" (:name_2 hour) ) ]         
+         [:td (when start (f/unparse (f/formatters :hour-minute) start))  ]
+         [:td (when stop (f/unparse (f/formatters :hour-minute) stop)) ]
+         [:td (time/format-interval (time/->hour-mins diff))]]))]])
 
-(defn start-stop [action project content]
+(defn start-stop [action period-id project content]
   [:div
    [:form {:method "POST" :action (str "/user/register/" action) }
     (anti-forgery-field)
     [:div.input-group
      (if (= action "start")
        [:input.form-control {:type "text" :name "project" :placeholder "Project name..."}]
-       [:input.form-control {:type "text" :name "project" :value project :readonly "readonly"}])
+       (list
+        [:input {:type "hidden" :name "period-id" :value (str period-id)}]
+        [:input.form-control {:type "text" :name "project" :value project :readonly "readonly"}]))
      [:span.input-group-btn
       [:button.btn.btn-default {:type "submit" :value action} action]]
      ]]
@@ -183,8 +186,8 @@
 (defn show-week-page [logged-in-user date]
   (page-template logged-in-user (display-week (time/week (f/parse (f/formatters :basic-date) date)))))
 
-(defn show-hours-page [logged-in-user action content hours]
-  (page-template logged-in-user (start-stop action content (display-hours hours (security/user-id-kw)))))
+(defn show-hours-page [logged-in-user action content period-id periods]
+  (page-template logged-in-user (start-stop action period-id content (display-hours periods (security/user-id-kw)))))
 
 (defn show-clients-page [logged-in-user clients]
   (page-template logged-in-user (display-clients clients)))
