@@ -11,7 +11,8 @@
       [clj-time.core :as t]
       [hours.time :as time]
       [hours.layout :as layout]
-      [hours.client :as client]      
+      [hours.client :as client]
+      [hours.prjct :as prjct]
       [hours.migrations :as migrations]
       [hours.security :as security]
       [environ.core :refer [env]])
@@ -43,6 +44,14 @@
               :extra extra
               :iterate iterate}))
 
+(defn add-client [name]
+  (client/add-client<! {:name name :user_id (security/user-id)}  {:connection db-spec})
+  (ring.util.response/redirect "/client/"))
+
+(defn add-project [client-id name]
+  (prjct/add-project<! {:name name :client_id client-id}  {:connection db-spec})
+  (ring.util.response/redirect "/project/"))
+
 (defn logout []
   (security/logout) 
   (reset! current {})
@@ -59,12 +68,22 @@
                                                                              (layout/display-hours (add-interval date from to extra iterate)))))
 
 (defroutes client-routes
-  (GET "/" [] (layout/show-clients-page (security/logged-in-user) (client/all-clients {} {:connection db-spec}))))
+  (GET "/" [] (layout/show-clients-page (security/logged-in-user) (client/user-clients {:user_id (security/user-id)} {:connection db-spec})))
+  (GET "/:client-id/projects" [client-id] (layout/show-projects-page (security/logged-in-user) (prjct/user-client-projects {:user_id (security/user-id)  :client_id client-id} {:connection db-spec})) )
+  
+  (GET "/add" [] (layout/show-add-client-page (security/logged-in-user)))
+  (POST "/add" [name] (add-client name)))
+
+(defroutes project-routes
+  (GET "/" [] (layout/show-projects-page (security/logged-in-user) (prjct/user-projects {:user_id (security/user-id)} {:connection db-spec})))
+  (GET "/add/:client-id" [client-id] (layout/show-add-project-page (security/logged-in-user) (first (client/user-client {:user_id (security/user-id) :client_id client-id} {:connection db-spec}))))
+  (POST "/add/:client-id" [client-id name] (add-project client-id name)))
 
 (defroutes app-routes
   (GET "/" [] (layout/login-page))
   (context "/user" request (friend/wrap-authorize user-routes #{security/user}))
   (context "/client" request (friend/wrap-authorize client-routes #{security/user}))
+  (context "/project" request (friend/wrap-authorize project-routes #{security/user}))  
   (friend/logout (ANY "/logout" request (logout)))
   (route/not-found "not found"))
 

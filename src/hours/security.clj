@@ -68,8 +68,9 @@
 (defn logged-in-user []
   @current-user)
 
-(defn user-id-kw []
-  (-> @current-user
-       :workday-id
-        str
-        keyword))
+(defn user-id []
+  (->@current-user
+      :workday-id
+       str))
+
+(def user-id-kw (comp keyword user-id))

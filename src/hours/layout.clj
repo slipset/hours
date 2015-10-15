@@ -139,13 +139,46 @@
         (assoc :session session))))
 
 (defn display-clients [clients]
-  [:table.table
-   [:tbody
-    [:tr
-     [:th "Name"]]
-    (for [client clients]
-      [:tr
-       [:td (:name client)]])]])
+  (list [:table.table
+         [:tbody
+          [:tr
+           [:th "Name"]
+           [:th "&nbsp;"]]
+          (for [client clients]
+            [:tr
+             [:td (:name client)]
+             [:td [:a {:href (str "/project/add/" (:id client))} "Add project"] "|" [:a {:href (str "/client/" (:id client) "/projects")} "Show projects"]]])]]
+        [:div [:a {:href "/client/add/"} "Add client"]]))
+
+(defn display-add-client []
+  [:form {:method "POST" :action "/client/add"}
+    (anti-forgery-field)
+   [:div.input-group
+    [:input.form-control {:type "text" :name "name" :placeholder "Client name..."}]
+     [:span.input-group-btn
+      [:button.btn.btn-default {:type "submit"} "Add"]]]])
+
+
+(defn display-projects [projects]
+  (let [client-id (:workday_client_id (first projects))]
+    [:div  [:table.table
+            [:tbody
+             [:tr
+              [:th "Name"]
+              [:th "Client" ]]
+             (for [project projects]
+               [:tr
+                [:td (:name project)]
+                [:td (:name_2 project)]])]]
+     [:div [:a {:href (str "/project/add/" client-id)} "Add project"]]]))
+
+(defn display-add-project [client]
+  [:form {:method "POST" :action (str "/project/add/" (:id client))}
+    (anti-forgery-field)
+   [:div.input-group
+    [:input.form-control {:type "text" :name "name" :placeholder "project name..."}]
+     [:span.input-group-btn
+      [:button.btn.btn-default {:type "submit"} "Add"]]]])
 
 (defn show-week-page [logged-in-user date]
   (page-template logged-in-user (display-week (time/week (f/parse (f/formatters :basic-date) date)))))
@@ -155,3 +188,12 @@
 
 (defn show-clients-page [logged-in-user clients]
   (page-template logged-in-user (display-clients clients)))
+
+(defn show-add-client-page [logged-in-user]
+  (page-template logged-in-user (display-add-client)))
+
+(defn show-projects-page [logged-in-user projects]
+  (page-template logged-in-user (display-projects projects)))
+
+(defn show-add-project-page [logged-in-user client]
+  (page-template logged-in-user (display-add-project client)))
