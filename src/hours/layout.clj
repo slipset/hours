@@ -3,9 +3,11 @@
       [hiccup.core :refer [html]]
       [hiccup.page :refer [html5 include-js include-css]]
       [ring.util.anti-forgery :refer [anti-forgery-field]]
+      [ring.util.response]
       [clj-time.core :as t]
       [clj-time.format :as f]
-      [hours.time :as time]))
+      [hours.time :as time]
+      ))
 
 (defn display-week-chooser [mon]
   (let [prev (time/prev-week mon)
