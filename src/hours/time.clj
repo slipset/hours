@@ -14,6 +14,11 @@
 (defn prev-week [mon]
   (t/minus mon (t/weeks 1)))
 
+(defn today-at [[hour min]]
+  (-> (t/today-at 00 00)
+      (t/plus (t/hours (Integer.  hour)))
+      (t/plus (t/minutes (Integer.  min)))))
+
 (defn next-week [mon]
   (t/plus mon (t/weeks 1)))
 
@@ -28,7 +33,7 @@
     (vector (int (/ minutes 60)) (rem minutes 60))))
 
 (defn ->dt [date hour]
-  (let [fmt (f/formatter "yyyyMMddHH:mm")]
+  (let [fmt (f/formatter "dd/MM-yyHH:mm")]
     (f/parse fmt (str date hour))))
 
 (defn trunc-seconds [dt]
@@ -45,3 +50,9 @@
 (defn by-date [hours]
   (let [days (group-by (fn [period] (vector (f/unparse custom-formatter (:start period)) (:project period))) hours)]
     (mapcat find-total-by-day days)))
+
+(defn ->date-str [dt]
+  (f/unparse custom-formatter dt))
+
+(defn ->hh:mm-str [dt]
+  (f/unparse (f/formatters :hour-minute) dt))

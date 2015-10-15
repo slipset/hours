@@ -41,6 +41,33 @@
         [:td "&nbsp;"]
         [:td [:input {:type "submit" :value "Go"}]]]])]]])
 
+(defn display-edit-period-end [period]
+  [:form {:method "POST" :action (str "/period/" (:id period))}
+   [:input {:type "hidden" :name "date" :id "date" :value (time/->date-str (c/from-sql-time (:period_start period)))}]
+   [:input {:type "hidden" :name "project" :id "project" :value (:name_2 period)}]
+   [:input {:type "hidden" :name "start" :id "start" :value (time/->hh:mm-str (c/from-date (:period_start period)))}]
+   [:div.input-group.col-xs-3
+    [:input.form-control {:type "text" :name "end" :size "5" :maxlength "5"}]
+    [:span.input-group-btn
+     [:button.btn.btn-default {:type "submit" } "Stop"]]]])
+
+(defn display-edit-period [period]
+  [:form {:method "POST" :action (str "/period/" (:id period))}
+   [:div.form-group
+    [:label {:for "date"} "Date"]
+    [:input.form-control {:type "text" :name "date" :id "date" :value (time/->date-str (c/from-sql-time (:period_start period)))}]]
+   [:div.form-group
+    [:label {:for "project"} "Project"]
+    [:input.form-control {:type "text" :name "project" :id "project" :value (:name_2 period)}]]
+   [:div.form-group
+    [:label {:for "start"} "Start"]
+    [:input.form-control {:type "text" :name "start" :id "start" :value (time/->hh:mm-str (c/from-date (:period_start period)))}]]
+   [:div.form-group
+    [:label {:for "end"} "End"]
+    [:input.form-control {:type "text" :name "end" :id "end" :value (time/->hh:mm-str (c/from-sql-date (:period_end period)))}]]
+   [:button.btn.btn-default {:type "submit"} "Go!"] 
+   ])
+
 (defn display-hours [hours user-id]
   [:table.table
    [:tbody
@@ -49,7 +76,8 @@
      [:th "Project"]     
      [:th "Start"]
      [:th "End"]
-     [:th "Total"]]
+     [:th "Total"]
+     [:th "&nbsp;"]]
     (for [hour hours]
       (let [start (c/from-sql-time (:period_start hour)) 
             stop (c/from-sql-time (:period_end hour))
@@ -58,8 +86,11 @@
          [:td  (f/unparse time/custom-formatter start)]
          [:td  (str (:name_3 hour) "/" (:name_2 hour) ) ]         
          [:td (when start (f/unparse (f/formatters :hour-minute) start))  ]
-         [:td (when stop (f/unparse (f/formatters :hour-minute) stop)) ]
-         [:td (time/format-interval (time/->hour-mins diff))]]))]])
+         [:td (if stop
+                (f/unparse (f/formatters :hour-minute) stop)
+                (display-edit-period-end hour)) ]
+         [:td (time/format-interval (time/->hour-mins diff))]
+         [:td [:a {:href (str "/period/" (:id hour))} "edit"]]]))]])
 
 (defn start-stop [action period-id project content]
   [:div
@@ -150,12 +181,12 @@
           (for [client clients]
             [:tr
              [:td (:name client)]
-             [:td [:a {:href (str "/project/add/" (:id client))} "Add project"] "|" [:a {:href (str "/client/" (:id client) "/projects")} "Show projects"]]])]]
+             [:td [:a {:href (str "/project/add/" (:id client))} "Add project"] " | " [:a {:href (str "/client/" (:id client) "/projects")} "Show projects"]]])]]
         [:div [:a {:href "/client/add"} "Add client"]]))
 
 (defn display-add-client []
   [:form {:method "POST" :action "/client/add"}
-    (anti-forgery-field)
+   (anti-forgery-field)
    [:div.input-group
     [:input.form-control {:type "text" :name "name" :placeholder "Client name..."}]
      [:span.input-group-btn
@@ -200,3 +231,6 @@
 
 (defn show-add-project-page [logged-in-user client]
   (page-template logged-in-user (display-add-project client)))
+
+(defn show-edit-period-page [logged-in-user period]
+  (page-template logged-in-user (display-edit-period period)))
