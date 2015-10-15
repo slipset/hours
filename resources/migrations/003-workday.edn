@@ -1,0 +1,6 @@
+{:up ["CREATE TABLE workday_client (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), name text);"
+      "CREATE TABLE workday_project (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), workday_client_id UUID references workday_client(id), name text);"
+      "CREATE TABLE workday_period (id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), workday_user_id UUID references workday_user(id), workday_project_id UUID references workday_project(id), name text, period_start timestamp, period_end timestamp);"] 
+ :down ["DROP TABLE workday_client"
+        "DROP TABLE workday_project"
+        "DROP TABLE workday_period"]}
