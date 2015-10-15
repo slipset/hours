@@ -13,7 +13,7 @@
       [hours.layout :as layout]
       [hours.migrations :as migrations]
       [hours.security :as security]
-      )
+      [environ.core :refer [env]])
     (:gen-class))
 
 (def db-spec {:connection-uri (env :jdbc-database-url)})
