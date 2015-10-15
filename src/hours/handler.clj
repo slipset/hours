@@ -23,7 +23,7 @@
       [hours.migrations :as migrations])
     (:gen-class))
 
-(def hours (atom []))
+(def hours (atom {}))
 
 (def current (atom {}))
 
@@ -61,8 +61,9 @@
                               :grant_type "authorization_code"
                               :redirect_uri (format-config-uri client-config)}}})
 
-(defn add-hours [m]
-  (swap! hours conj m))
+(defn add-hours [m u]
+  (swap! hours (fn [hours]
+                 (update-in hours [u] conj m))))
 
 (def custom-formatter (f/formatter "dd/MM-yy"))
 
@@ -134,7 +135,7 @@
         [:td "&nbsp;"]
         [:td [:input {:type "submit" :value "Go"}]]]])]]])
 
-(defn display-hours [hours]
+(defn display-hours [hours user-id]
   [:table.table
    [:tbody
     [:tr
@@ -143,7 +144,7 @@
      [:th "Start"]
      [:th "End"]
      [:th "Total"]]
-    (for [hour (by-date hours)]
+    (for [hour (by-date (user-id hours))]
       (let [start (:start (second hour) )
             stop (:stop (second hour) )
             diff (t/interval start stop)]
@@ -222,16 +223,18 @@
        [:a.btn.btn-block.btn-social.btn-google {:href  "/user/"}
         [:i.fa.fa-google] "Sign in with Google" ]]]]]))
 
+(defn user-id-kw [user]
+  (keyword (get user "email")))
 
 (defn start [project]
   (swap! current assoc :start (trunc-seconds (t/now)) :project project)
-  (page-template (start-stop "stop" project (display-hours @hours))))
+  (page-template (start-stop "stop" project (display-hours @hours (user-id-kw @logged-in-user)))))
 
 (defn stop []
   (swap! current assoc :stop (trunc-seconds (t/now)))
-  (add-hours @current)
+  (add-hours @current (user-id-kw @logged-in-user))
   (reset! current {})
-  (page-template  (start-stop "start" "" (display-hours @hours))))
+  (page-template  (start-stop "start" "" (display-hours @hours (user-id-kw @logged-in-user)))))
 
 (defn ->dt [date hour]
   (let [fmt (f/formatter "yyyyMMddHH:mm")]
@@ -253,7 +256,7 @@
         (assoc :session session))))
 
 (defroutes secure-routes
-  (GET "/" [] (page-template  (start-stop "start" "" (display-hours @hours))))
+  (GET "/" [] (page-template  (start-stop "start" "" (display-hours @hours (user-id-kw @logged-in-user)))))
   (GET "/status" request (display-status request))
   (GET "/week" [] (page-template (display-week (week (t/now)))))
   (GET "/week/:date" [date] (page-template (display-week (week (f/parse (f/formatters :basic-date) date)))))
@@ -264,7 +267,6 @@
 (defn logout []
   (reset! logged-in-user {})
   (reset! current {})
-  (reset! hours {})
   (ring.util.response/redirect "/"))
 
 (defroutes app-routes
