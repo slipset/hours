@@ -6,8 +6,9 @@
       [clj-http.client :as client]
       [cheshire.core :as parse]))
 
-(def logged-in-user (atom {}))
+(def current-user (atom {}))
 
+(def user ::user)
 (def client-config
   {:client-id     (env :hours-oauth2-client-id)
    :client-secret (env :hours-oauth2-client-secret)
@@ -22,7 +23,7 @@
 
 (defn credential-fn [token]
   (let [userinfo (google-user-details (:access-token token))]
-    (reset! logged-in-user userinfo)
+    (reset! current-user userinfo)
     {:identity token
      :user-info userinfo
      :roles #{::user}}))
@@ -48,5 +49,8 @@
                    :credential-fn credential-fn})
                    ]})
 
+(defn logout []
+  (reset! current-user {}))
+
 (defn logged-in-user []
-  @logged-in-user)
+  @current-user)

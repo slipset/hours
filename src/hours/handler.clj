@@ -1,17 +1,12 @@
 (ns hours.handler
     (:require
-      [clojure.java.io :as io]
       [ring.middleware.file :refer [wrap-file]]
       [ring.adapter.jetty :refer [run-jetty]]
-      [ring.util.anti-forgery :refer [anti-forgery-field]]
       [compojure.core :refer :all]
       [compojure.route :as route]
       [compojure.handler :as handler]
       [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
       [cemerick.friend        :as friend]
-      [friend-oauth2.workflow :as oauth2]
-      [friend-oauth2.util     :refer [format-config-uri]]
-      [environ.core           :refer [env]]
       [clj-time.core :as t]
       [hours.time :as time]
       [hours.layout :as layout]
@@ -44,7 +39,7 @@
               :iterate iterate}))
 
 (defn logout []
-  (reset! logged-in-user {})
+  (security/logout) 
   (reset! current {})
   (ring.util.response/redirect "/"))
 
@@ -60,13 +55,13 @@
 
 (defroutes app-routes
   (GET "/" [] (layout/login-page))
-  (context "/user" request (friend/wrap-authorize secure-routes #{::user}))
+  (context "/user" request (friend/wrap-authorize secure-routes #{security/user}))
   (friend/logout (ANY "/logout" request (logout)))
   (route/not-found "not found"))
 
 (def app
   (-> #'app-routes
-        (friend/authenticate friend-config)
+        (friend/authenticate security/friend-config)
         (wrap-file "resources/public")
         handler/site))
 
