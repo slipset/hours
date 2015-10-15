@@ -151,7 +151,7 @@
             [:tr
              [:td (:name client)]
              [:td [:a {:href (str "/project/add/" (:id client))} "Add project"] "|" [:a {:href (str "/client/" (:id client) "/projects")} "Show projects"]]])]]
-        [:div [:a {:href "/client/add/"} "Add client"]]))
+        [:div [:a {:href "/client/add"} "Add client"]]))
 
 (defn display-add-client []
   [:form {:method "POST" :action "/client/add"}

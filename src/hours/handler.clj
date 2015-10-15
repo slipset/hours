@@ -70,8 +70,7 @@
 
 (defroutes client-routes
   (GET "/" [] (layout/show-clients-page (security/logged-in-user) (client/user-clients {:user_id (security/user-id)} db-spec)))
-  (GET "/:client-id/projects" [client-id] (layout/show-projects-page (security/logged-in-user) (prjct/user-client-projects {:user_id (security/user-id)  :client_id client-id} db-spec)) )
-  
+  (GET "/:client-id/projects" [client-id] (layout/show-projects-page (security/logged-in-user) (prjct/user-client-projects {:user_id (security/user-id)  :client_id client-id} db-spec)))
   (GET "/add" [] (layout/show-add-client-page (security/logged-in-user)))
   (POST "/add" [name] (add-client name)))
 
