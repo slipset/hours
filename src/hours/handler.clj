@@ -48,11 +48,21 @@
   (period/delete-period! db-spec user-id id)
   (ring.util.response/redirect "/user/register/start"))
 
+(defn show-start-stop
+  ([user-info]
+   (let [unstopped (first (period/find-unstopped db-spec (:workday-id user-info)))]
+    (if (seq unstopped)
+      (show-stop user-info (:id unstopped) (:name_2 unstopped))
+      (show-start user-info))))
+  ([user-info period-id]
+   (let [unstopped (first (period/by-id {:id period-id :user_id (:workday-id user-info)} db-spec))]
+     (show-stop user-info (:id unstopped) (:name_2 unstopped)))))
+
 (defn show-start [user-info]
   (layout/show-hours-page user-info "start" "" nil (period/by-user {:user_id (:workday-id user-info)} db-spec)))
 
-(defn show-stop [user-info period-id]
-  (layout/show-hours-page user-info "stop" "foo" period-id (period/by-user {:user_id (:workday-id user-info)} db-spec)))
+(defn show-stop [user-info period-id project-name]
+  (layout/show-hours-page user-info "stop" project-name period-id (period/by-user {:user_id (:workday-id user-info)} db-spec)))
 
 (defn show-projects [user-info client-id]
   (layout/show-projects-page user-info
@@ -63,8 +73,8 @@
   (GET "/status" request (layout/show-status-page (security/user-info request) request))
   (GET "/week" request (layout/show-week-page (security/user-info request) (t/now)))
   (GET "/week/:date" [date :as r] (layout/show-week-page (security/user-info r) date))
-  (GET "/register/stop/:period-id" [period-id :as r] (show-stop (security/user-info r) period-id))
-  (GET "/register/start" request (show-start (security/user-info request)))
+  (GET "/register/stop/:period-id" [period-id :as r] (show-start-stop (security/user-info r) period-id))
+  (GET "/register/start" request (show-start-stop (security/user-info request)))
   (POST "/register/start" [project :as r] (start! (security/user-info r) project))
   (POST "/register/stop" [period-id :as r] (stop! (security/user-info r) period-id)))
 

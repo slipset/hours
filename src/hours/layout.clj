@@ -86,9 +86,8 @@
          [:td  (f/unparse time/custom-formatter start)]
          [:td  (str (:name_3 hour) "/" (:name_2 hour) ) ]         
          [:td (when start (f/unparse (f/formatters :hour-minute) start))  ]
-         [:td (if stop
-                (f/unparse (f/formatters :hour-minute) stop)
-                (display-edit-period-end hour)) ]
+         [:td (when stop
+                (f/unparse (f/formatters :hour-minute) stop)) ]
          [:td (time/format-interval (time/->hour-mins diff))]
          [:td [:a {:href (str "/period/" (:id hour))} "edit"] " | " [:a {:href (str "/period/" (:id hour) "/delete")} "delete"]]]))]])
 

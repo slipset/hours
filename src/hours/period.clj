@@ -27,3 +27,5 @@
               :start (c/to-sql-time start)
               :end (c/to-sql-time end)} db-spec)))
 
+(defn find-unstopped [db-spec user-id]
+  (unstopped {:user_id user-id} db-spec))
