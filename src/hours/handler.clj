@@ -44,6 +44,10 @@
   (period/edit-period! db-spec user-id id date start end project)
   (ring.util.response/redirect "/user/register/start"))
 
+(defn delete-period! [user-id id]
+  (period/delete-period! db-spec user-id id)
+  (ring.util.response/redirect "/user/register/start"))
+
 (defn show-start [user-info]
   (layout/show-hours-page user-info "start" "" nil (period/by-user {:user_id (:workday-id user-info)} db-spec)))
 
@@ -77,7 +81,8 @@
 
 (defroutes period-routes
   (GET "/:id" [id :as r] (layout/show-edit-period-page (security/user-info r) (first (period/by-id {:user_id (security/user-id r) :id id} db-spec))))
-  (POST "/:id" [id date start end project :as r] (edit-period! (security/user-id r) id date start end project)))
+  (POST "/:id" [id date start end project :as r] (edit-period! (security/user-id r) id date start end project))
+  (GET "/:id/delete" [id :as r] (delete-period! (security/user-id r) id)))
 
 (defroutes app-routes
   (GET "/" [] (layout/login-page))

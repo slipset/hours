@@ -14,6 +14,9 @@
 (defn stop! [db-spec user-id period-id]
   (end! {:id period-id :end (c/to-sql-time (t/now)) :user_id user-id} db-spec))
 
+(defn delete-period! [db-spec user-id id]
+  (delete! {:id id :user_id user-id} db-spec))
+
 (defn edit-period! [db-spec user-id id date start end project]
   (let [start (time/->dt date start)
         end (time/->dt date end)

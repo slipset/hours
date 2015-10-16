@@ -90,7 +90,7 @@
                 (f/unparse (f/formatters :hour-minute) stop)
                 (display-edit-period-end hour)) ]
          [:td (time/format-interval (time/->hour-mins diff))]
-         [:td [:a {:href (str "/period/" (:id hour))} "edit"]]]))]])
+         [:td [:a {:href (str "/period/" (:id hour))} "edit"] " | " [:a {:href (str "/period/" (:id hour) "/delete")} "delete"]]]))]])
 
 (defn start-stop [action period-id project content]
   [:div

@@ -15,3 +15,6 @@ select * from workday_period p1, workday_project p2, workday_client c where p1.w
 update workday_period set period_end = :end, period_start = :start, workday_project_id = (:project_id)::uuid
 where id = (:id)::uuid and workday_user_id = (:user_id)::uuid
 
+--name: delete!
+delete from workday_period where id = (:id)::uuid and workday_user_id = (:user_id)::uuid
+
