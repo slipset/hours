@@ -92,24 +92,25 @@
          [:td [:a {:href (str "/period/" (:id hour))} "edit"] " | " [:a {:href (str "/period/" (:id hour) "/delete")} "delete"]]]))]])
 
 (defn start-stop [action period-id project content]
-  [:div
-   [:form {:method "POST" :action (str "/user/register/" action) }
+  [:div.row
+   [:form.form-inline {:method "POST" :action (str "/user/register/" action) }
     (anti-forgery-field)
-    [:div.input-group
+    [:div {}
      (if (= action "start")
-       [:input.form-control {:type "text" :name "project" :placeholder "Project name..."}]
+       (list
+        [:input.form-control {:type "text" :name "date" :id "date-container"   :value (time/->date-dd.mm (t/now))}]
+        [:input.form-control {:type "text" :name "project" :placeholder "Project name..."}]
+        [:script "$('#date-container').datepicker({ format: 'dd/mm', weekStart: 1, calendarWeeks: true, autoclose: true, todayHighlight: true, endDate: 'today', orientation: 'top left'});" ])
        (list
         [:input {:type "hidden" :name "period-id" :value (str period-id)}]
         [:input.form-control {:type "text" :name "project" :value project :readonly "readonly"}]))
-     [:span.input-group-btn
-      [:button.btn.btn-default {:type "submit" :value action} action]]
-     ]]
-   content])
+     [:button.btn.btn-default {:type "submit" :value action} action]]] content])
 
 (defn include-styling []
   (list [:script {:src "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"}]
-  (include-css  "/css/bootstrap.min.css" "/css/bootstrap-social.css" "/css/font-awesome.min.css")
-  (include-js "/js/bootstrap.min.js" )))
+        (include-css  "/css/bootstrap.min.css" "/css/bootstrap-social.css" "/css/font-awesome.min.css"
+                      "/css/bootstrap-datepicker3.min.css")
+        (include-js "/js/bootstrap.min.js" "/js/bootstrap-datepicker.min.js")))
 
 (defn display-user-nav-bar [userinfo]
   [:li [:p.navbar-text (get userinfo "name") "&nbsp;" [:img {:src (get userinfo "picture") :width "20"}]]])

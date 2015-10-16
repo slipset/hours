@@ -7,12 +7,12 @@
 
 (defqueries "hours/period.sql")
 
-(defn start! [db-spec user-id project]
+(defn start! [db-spec user-id project date]
   (let [project-id (:id (first (prjct/by-name {:name project :user_id user-id} db-spec)))]
-    (:id (start<! {:user_id user-id :project_id project-id :start (c/to-sql-time (t/now))} db-spec))))
+    (:id (start<! {:user_id user-id :project_id project-id :start (c/to-sql-time date)} db-spec))))
 
-(defn stop! [db-spec user-id period-id]
-  (end! {:id period-id :end (c/to-sql-time (t/now)) :user_id user-id} db-spec))
+(defn stop! [db-spec user-id period-id end]
+  (end! {:id period-id :end (c/to-sql-time end) :user_id user-id} db-spec))
 
 (defn delete-period! [db-spec user-id id]
   (delete! {:id id :user_id user-id} db-spec))

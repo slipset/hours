@@ -54,5 +54,16 @@
 (defn ->date-str [dt]
   (f/unparse custom-formatter dt))
 
+(defn ->date-dd.mm [dt]
+  (f/unparse (f/formatter "dd/MM") dt))
+
 (defn ->hh:mm-str [dt]
   (f/unparse (f/formatters :hour-minute) dt))
+
+(defn add-this-year [dt]
+  (->> (t/now)
+       (t/year)
+       (- 2000)
+       (* -1)
+       (t/years)
+       (t/plus dt)))

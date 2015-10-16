@@ -9,6 +9,7 @@
       [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
       [cemerick.friend        :as friend]
       [clj-time.core :as t]
+      [clj-time.format :as f]
       [clj-time.coerce :as c]      
       [hours.time :as time]
       [hours.layout :as layout]
@@ -22,14 +23,14 @@
 
 (def db-spec {:connection {:connection-uri (env :jdbc-database-url)}})
 
-(defn start! [user project]
+(defn start! [user project date]
   (let [user-id (:workday-id user)
-        period-id (period/start! db-spec user-id project)]
+        period-id (period/start! db-spec user-id project (time/add-this-year (f/parse (f/formatter "dd/MM") date)))]
     (ring.util.response/redirect (str "/user/register/stop/" period-id))))
 
 (defn stop! [user period-id]
   (let [user-id (:workday-id user)]
-    (period/stop! db-spec user-id period-id)
+    (period/stop! db-spec user-id period-id (t/now))
     (ring.util.response/redirect "/user/register/start")))
 
 (defn add-client! [user-id name]
@@ -75,7 +76,7 @@
   (GET "/week/:date" [date :as r] (layout/show-week-page (security/user-info r) date))
   (GET "/register/stop/:period-id" [period-id :as r] (show-start-stop (security/user-info r) period-id))
   (GET "/register/start" request (show-start-stop (security/user-info request)))
-  (POST "/register/start" [project :as r] (start! (security/user-info r) project))
+  (POST "/register/start" [project date :as r] (start! (security/user-info r) project date))
   (POST "/register/stop" [period-id :as r] (stop! (security/user-info r) period-id)))
 
 (defroutes client-routes
