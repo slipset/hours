@@ -48,6 +48,12 @@
   (period/delete-period! db-spec user-id id)
   (ring.util.response/redirect "/user/register/start"))
 
+(defn show-start [user-info]
+  (layout/show-hours-page user-info "start" "" nil (period/by-user {:user_id (:workday-id user-info)} db-spec)))
+
+(defn show-stop [user-info period-id project-name]
+  (layout/show-hours-page user-info "stop" project-name period-id (period/by-user {:user_id (:workday-id user-info)} db-spec)))
+
 (defn show-start-stop
   ([user-info]
    (let [unstopped (first (period/find-unstopped db-spec (:workday-id user-info)))]
@@ -57,12 +63,6 @@
   ([user-info period-id]
    (let [unstopped (first (period/by-id {:id period-id :user_id (:workday-id user-info)} db-spec))]
      (show-stop user-info (:id unstopped) (:name_2 unstopped)))))
-
-(defn show-start [user-info]
-  (layout/show-hours-page user-info "start" "" nil (period/by-user {:user_id (:workday-id user-info)} db-spec)))
-
-(defn show-stop [user-info period-id project-name]
-  (layout/show-hours-page user-info "stop" project-name period-id (period/by-user {:user_id (:workday-id user-info)} db-spec)))
 
 (defn show-projects [user-info client-id]
   (layout/show-projects-page user-info
