@@ -134,15 +134,18 @@
        [:ul.nav.navbar-nav
         [:li [:a {:href "/user"} "Home"]]
         [:li [:a {:href "/user/status"} "Status"]]
-        [:li [:a {:href "/reports"} "Reports"]]
-        [:li [:a {:href "/client"} "Clients"]]]
+        [:li [:a {:href "/client"} "Clients"]]
+        [:li.dropdown
+         [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
+                              :aria-haspopup "true" :aria-expanded "false"} "Reports" [:span.caret]]
+         
+         [:ul.dropdown-menu
+          [:li [:a {:href "/reports/by-week"} "Weekly"]]]]]
        [:ul.nav.navbar-nav.navbar-right
         (display-user-nav-bar logged-in-user)
         [:li [:a {:href "/logout"} [:span.glyphicon.glyphicon-log-out] "Logout"]]]
        ]]]
-    [:div.container content]
-    [:div.row
-     ]]))
+    [:div.container content]]))
 
 (defn login-page []
   (html5
