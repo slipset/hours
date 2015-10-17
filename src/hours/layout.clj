@@ -134,6 +134,7 @@
        [:ul.nav.navbar-nav
         [:li [:a {:href "/user"} "Home"]]
         [:li [:a {:href "/user/status"} "Status"]]
+        [:li [:a {:href "/reports"} "Reports"]]
         [:li [:a {:href "/client"} "Clients"]]]
        [:ul.nav.navbar-nav.navbar-right
         (display-user-nav-bar logged-in-user)
