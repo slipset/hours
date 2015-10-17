@@ -109,11 +109,18 @@
 (defn include-styling []
   (list [:script {:src "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"}]
         (include-css  "/css/bootstrap.min.css" "/css/bootstrap-social.css" "/css/font-awesome.min.css"
-                      "/css/bootstrap-datepicker3.min.css")
+                      "/css/bootstrap-datepicker3.min.css" "/css/hours.css")
         (include-js "/js/bootstrap.min.js" "/js/bootstrap-datepicker.min.js")))
 
 (defn display-user-nav-bar [userinfo]
   [:li [:p.navbar-text (get userinfo "name") "&nbsp;" [:img {:src (get userinfo "picture") :width "20"}]]])
+
+(defn footer []
+  [:footer.footer {:role "contentinfo"}
+     [:div.container
+      [:hr
+       [:p [:i.fa.fa-github] "&nbsp;"[:a {:href "https://github.com/slipset/"} "slipset"] "/"
+        [:a {:href "https://github.com/hours/"} "hours"] " | " [:i.fa.fa-twitter] [:a {:href "https://twitter.com/slipset/"} "slipset"]] ]]])
 
 (defn page-template [logged-in-user content]
   (html5
@@ -145,7 +152,8 @@
         (display-user-nav-bar logged-in-user)
         [:li [:a {:href "/logout"} [:span.glyphicon.glyphicon-log-out] "Logout"]]]
        ]]]
-    [:div.container content]]))
+    [:div.container content]
+    (footer)]))
 
 (defn login-page []
   (html5
@@ -165,7 +173,8 @@
      [:div.row
       [:div.col-lg-4.col-lg-offset-4.col-md-4.col-md-offset-4.col-sm-6.col-sm-offset-3
        [:a.btn.btn-block.btn-social.btn-google {:href  "/user/"}
-        [:i.fa.fa-google] "Sign in with Google" ]]]]]))
+        [:i.fa.fa-google] "Sign in with Google" ]]]]
+    (footer)]))
 
 (defn show-status-page [logged-in-user request]
   (let [count (:count (:session request) 0)
