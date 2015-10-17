@@ -75,8 +75,6 @@
 (defroutes user-routes
   (GET "/" request (ring.util.response/redirect "/user/register/start"))
   (GET "/status" request (layout/show-status-page (security/user-info request) request))
-  (GET "/week" request (layout/show-week-page (security/user-info request) (t/now)))
-  (GET "/week/:date" [date :as r] (layout/show-week-page (security/user-info r) date))
   (GET "/register/stop/:period-id" [period-id :as r] (show-start-stop (security/user-info r) period-id))
   (GET "/register/start" request (show-start-stop (security/user-info request)))
   (POST "/register/start" [project date :as r] (start! (security/user-info r) project date))
