@@ -219,7 +219,8 @@
       [:button.btn.btn-default {:type "submit"} "Add"]]]])
 
 (defn display-not-found [request]
-  [:iframe {:width "560" :height "315" :src "https://www.youtube.com/embed/O_ISAntOom0" :frameborder "0" } ])
+  (list [:h1 (str "404 Not found: " (:uri request))]
+   [:iframe {:width "560" :height "315" :src "https://www.youtube.com/embed/O_ISAntOom0" :frameborder "0" } ]))
 
 (defn show-week-page [logged-in-user date]
   (page-template logged-in-user (display-week (time/week (f/parse (f/formatters :basic-date) date)))))
