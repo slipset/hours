@@ -29,6 +29,9 @@
 (defn add-days [dt i]
   (t/plus dt (t/days i)))
 
+(defn format-interval [hours-mins]
+  (apply format (cons "%02d:%02d" hours-mins)))
+
 (defn format-minutes [minutes]
   (format-interval (vector (int (/ minutes 60)) (rem minutes 60))))
 
@@ -52,9 +55,6 @@
   (-> (trunc-seconds dt)
       (t/minus (t/minutes (t/minute dt)))
       (t/minus (t/hours (t/hour dt)))))
-
-(defn format-interval [hours-mins]
-  (apply format (cons "%02d:%02d" hours-mins)))
 
 (defn find-total-by-day [[date periods]]
   {date {:start (:start (first periods)) :stop (:stop (last periods))}})
