@@ -13,5 +13,6 @@
 
 (defn weekly-report [db-spec user-id date group-function]
   (let [[week-start week-end] (time/week-period date)]
-    (group-by group-function
-              (by-week db-spec user-id (c/to-sql-time week-start) (c/to-sql-time week-end)))))
+    (->> (by-week db-spec user-id (c/to-sql-time week-start) (c/to-sql-time week-end))
+         (group-by group-function)
+         (sort-by first))))
