@@ -7,6 +7,8 @@
       [compojure.route :as route]
       [compojure.handler :as handler]
       [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
+      [ring.util.response :refer [file-response resource-response
+                                  status content-type]]      
       [cemerick.friend        :as friend]
       [clj-time.core :as t]
       [clj-time.format :as f]
@@ -107,7 +109,7 @@
   (context "/period" request (friend/wrap-authorize period-routes #{security/user}))
   (context "/report" request (friend/wrap-authorize report-routes #{security/user}))      
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
-  (route/not-found "not found"))
+  (rfn request (-> {:body  (layout/show-not-found (security/user-info request) request)} (status 404))))
 
 (def app
   (-> #'app-routes

@@ -218,6 +218,9 @@
      [:span.input-group-btn
       [:button.btn.btn-default {:type "submit"} "Add"]]]])
 
+(defn display-not-found [request]
+  [:iframe {:width "560" :height "315" :src "https://www.youtube.com/embed/O_ISAntOom0" :frameborder "0" } ])
+
 (defn show-week-page [logged-in-user date]
   (page-template logged-in-user (display-week (time/week (f/parse (f/formatters :basic-date) date)))))
 
@@ -238,3 +241,6 @@
 
 (defn show-edit-period-page [logged-in-user period]
   (page-template logged-in-user (display-edit-period period)))
+
+(defn show-not-found [logged-in-user request]
+  (page-template logged-in-user (display-not-found request)))
