@@ -21,6 +21,9 @@
      [:a {:href (str "/user/week/" (f/unparse (f/formatters :basic-date) next )) } (.getWeekOfWeekyear next) ]
      ]))
 
+(defn display-project [project client]
+  [:td  [:h5 {:style "margin-top: 0px; margin-bottom: 0px"} project "&nbsp;" [:small client]]])
+
 (defn sum [acc period]
   (let [start (c/from-sql-time (:period_start period))
         stop (c/from-sql-time (:period_end period))
@@ -30,7 +33,7 @@
 (defn display-project-day [[key periods]]
   [:tr
    [:td (time/->date-dd.mm (first key))]
-   [:td (second key)]
+   (display-project (second (second key)) (first (second key)) )
    [:td (time/format-minutes (reduce sum 0 periods))]])
 
 (defn display-report [report]
@@ -86,7 +89,8 @@
             diff (t/interval start stop)]
         [:tr
          [:td  (f/unparse time/custom-formatter start)]
-         [:td  (str (:name_3 hour) "/" (:name_2 hour) ) ]         
+         (display-project (:name_2 hour) (:name_3 hour))
+                  
          [:td (when start (f/unparse (f/formatters :hour-minute) start))  ]
          [:td (when stop
                 (f/unparse (f/formatters :hour-minute) stop)) ]
@@ -95,18 +99,22 @@
 
 (defn start-stop [action period-id project content]
   [:div.row
-   [:form.form-inline {:method "POST" :action (str "/user/register/" action) }
+   [:form {:method "POST" :action (str "/user/register/" action) }
     (anti-forgery-field)
-    [:div {}
+    [:div.input-group
      (if (= action "start")
        (list
-        [:input.form-control {:type "text" :name "date" :id "date-container"   :value (time/->date-dd.mm (t/now))}]
+        [:div.input-group-btn
+         #_[:button.btn.btn-default {:id "date-container" :type "button":value (time/->date-dd.mm (t/now))} ]
+         [:input.form-control {:type "text" :style "width: 5em" :name "date" :id "date-container" :value (time/->date-dd.mm (t/now))}]]
         [:input.form-control {:type "text" :name "project" :placeholder "Project name..."}]
         [:script "$('#date-container').datepicker({ format: 'dd/mm', weekStart: 1, calendarWeeks: true, autoclose: true, todayHighlight: true, endDate: 'today', orientation: 'top left'});" ])
        (list
         [:input {:type "hidden" :name "period-id" :value (str period-id)}]
         [:input.form-control {:type "text" :name "project" :value project :readonly "readonly"}]))
-     [:button.btn.btn-default {:type "submit" :value action} action]]] content])
+     (if (= action "start")
+       [:span.input-group-btn [:button.btn.btn-success {:type "submit" :value "start"} "start"]]
+       [:span.input-group-btn [:button.btn.btn-default {:type "submit" :value "stop"} "stop"]])]] content])
 
 (defn include-styling []
   (list [:script {:src "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"}]

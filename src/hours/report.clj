@@ -9,7 +9,7 @@
   (by-dates {:user_id user-id :period_start week-start :period_end week-end} db-spec))
 
 (defn group-by-date-project [period]
-  [(time/trunc-hours (c/from-sql-time (:period_start period))) (str  (:name_3 period) "/" (:name_2 period))])
+  [(time/trunc-hours (c/from-sql-time (:period_start period))) [(:name_3 period)  (:name_2 period)]])
 
 (defn weekly-report [db-spec user-id date group-function]
   (let [[week-start week-end] (time/week-period date)]
