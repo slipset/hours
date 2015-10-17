@@ -116,6 +116,8 @@
   (-> #'app-routes
         (friend/authenticate (security/friend-config db-spec))
         (wrap-file "resources/public")
+        (wrap-content-type)
+        (wrap-not-modified)        
         handler/site))
 
 (defn start-jetty  [port]
