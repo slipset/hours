@@ -21,25 +21,27 @@
      [:a {:href (str "/user/week/" (f/unparse (f/formatters :basic-date) next )) } (.getWeekOfWeekyear next) ]
      ]))
 
-(defn display-week [week]
-  [:div
-   (display-week-chooser (first week))
-   [:table {:border "1"}
+(defn sum [acc period]
+  (let [start (c/from-sql-time (:period_start period))
+        stop (c/from-sql-time (:period_end period))
+        minutes (t/in-minutes (t/interval start stop))]
+    (+ acc minutes)))
+
+(defn display-project-day [[key periods]]
+  [:tr
+   [:td (time/->date-dd.mm (first key))]
+   [:td (second key)]
+   [:td (time/format-minutes (reduce sum 0 periods))]])
+
+(defn display-report [report]
+  [:table.table
    [:tbody
     [:tr
-     [:th "Date"] [:th "Project"][:th "From"] [:th "To"] [:th "Sum"] [:th "Extra"] [:th "Iterate"] [:th "Total"] [:th "&nbsp;"]]
-    (for [day week]
-      [:form {:method "POST" :action (str "/user/register/" (f/unparse (f/formatters :basic-date) day))}
-       (anti-forgery-field)
-       [:tr
-        [:td (f/unparse time/custom-formatter day)]
-        [:td [:input {:type "text" :name "from"}]]
-        [:td [:input {:type "text" :name "to"}]]
-        [:td "&nbsp;"]
-        [:td [:input {:type "text" :name "extra"}]]
-        [:td [:input {:type "text" :name "iterate"}]]
-        [:td "&nbsp;"]
-        [:td [:input {:type "submit" :value "Go"}]]]])]]])
+     [:th "Date"]
+     [:th "Project"]     
+     [:th "Total"]
+     [:th "&nbsp;"]]
+    (map display-project-day report)]])
 
 (defn display-edit-period-end [period]
   [:form {:method "POST" :action (str "/period/" (:id period))}
@@ -254,3 +256,6 @@
 
 (defn show-not-found [logged-in-user request]
   (page-template logged-in-user (display-not-found request)))
+
+(defn show-report [logged-in-user report]
+  (page-template logged-in-user (display-report report)))

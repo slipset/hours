@@ -18,6 +18,7 @@
       [hours.period :as period]      
       [hours.client :as client]
       [hours.prjct :as prjct]
+      [hours.report :as report]
       [hours.migrations :as migrations]
       [hours.security :as security]
       [environ.core :refer [env]])
@@ -98,7 +99,9 @@
   (GET "/:id/delete" [id :as r] (delete-period! (security/user-id r) id)))
 
 (defroutes report-routes
-  (GET "/by-week" r) )
+  (GET "/by-week" r (layout/show-report (security/user-info r)
+                                        (report/weekly-report db-spec (security/user-id r)
+                                                              (t/now) report/group-by-date-project))))
 
 (defroutes app-routes
   (GET "/" [] (layout/login-page))

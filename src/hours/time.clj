@@ -11,6 +11,10 @@
       dt
       (t/minus dt (t/days (dec today)))))) 
 
+(defn week-period [dt]
+  (let [mon (prev-monday dt)]
+    [mon (t/plus mon (t/days 7))]))
+
 (defn prev-week [mon]
   (t/minus mon (t/weeks 1)))
 
@@ -24,6 +28,9 @@
 
 (defn add-days [dt i]
   (t/plus dt (t/days i)))
+
+(defn format-minutes [minutes]
+  (format-interval (vector (int (/ minutes 60)) (rem minutes 60))))
 
 (defn week [dt]
   (map (partial add-days (prev-monday dt)) (range 0 7)))
@@ -40,6 +47,11 @@
   (-> dt
       (t/minus (t/seconds (t/second dt)))
       (t/minus (t/millis (t/milli dt)))))
+
+(defn trunc-hours [dt]
+  (-> (trunc-seconds dt)
+      (t/minus (t/minutes (t/minute dt)))
+      (t/minus (t/hours (t/hour dt)))))
 
 (defn format-interval [hours-mins]
   (apply format (cons "%02d:%02d" hours-mins)))
