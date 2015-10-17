@@ -95,13 +95,17 @@
   (POST "/:id" [id date start end project :as r] (edit-period! (security/user-id r) id date start end project))
   (GET "/:id/delete" [id :as r] (delete-period! (security/user-id r) id)))
 
+(defroutes report-routes
+  (GET "/by-week" r) )
+
 (defroutes app-routes
   (GET "/" [] (layout/login-page))
   (GET "/status" request (layout/show-status-page {} request))
   (context "/user" request (friend/wrap-authorize user-routes #{security/user}))
   (context "/client" request (friend/wrap-authorize client-routes #{security/user}))
   (context "/project" request (friend/wrap-authorize project-routes #{security/user}))
-  (context "/period" request (friend/wrap-authorize period-routes #{security/user}))    
+  (context "/period" request (friend/wrap-authorize period-routes #{security/user}))
+  (context "/report" request (friend/wrap-authorize report-routes #{security/user}))      
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
   (route/not-found "not found"))
 
