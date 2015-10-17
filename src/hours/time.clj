@@ -79,3 +79,11 @@
        (* -1)
        (t/years)
        (t/plus dt)))
+
+(defn add-now [dt]
+  (let [now (t/now)
+        mins (t/minute now)
+        hours (t/hour now)]
+    (-> dt
+        (t/plus (t/minutes mins))
+        (t/plus (t/hours hours)))))
