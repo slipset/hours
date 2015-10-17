@@ -122,7 +122,7 @@
      [:div.container
       [:hr
        [:p [:i.fa.fa-github] "&nbsp;"[:a {:href "https://github.com/slipset/"} "slipset"] "/"
-        [:a {:href "https://github.com/hours/"} "hours"] " | " [:i.fa.fa-twitter] [:a {:href "https://twitter.com/slipset/"} "slipset"]] ]]])
+        [:a {:href "https://github.com/slipset/hours/"} "hours"] " | " [:i.fa.fa-twitter] [:a {:href "https://twitter.com/slipset/"} "slipset"]] ]]])
 
 (defn page-template [logged-in-user content]
   (html5
@@ -206,7 +206,6 @@
     [:input.form-control {:type "text" :name "name" :placeholder "Client name..."}]
      [:span.input-group-btn
       [:button.btn.btn-default {:type "submit"} "Add"]]]])
-
 
 (defn display-projects [projects]
   (let [client-id (:workday_client_id (first projects))]
