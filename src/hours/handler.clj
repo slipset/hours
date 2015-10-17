@@ -7,6 +7,8 @@
       [compojure.route :as route]
       [compojure.handler :as handler]
       [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
+      [ring.middleware.content-type :refer [wrap-content-type]]
+      [ring.middleware.not-modified :refer [wrap-not-modified]]      
       [ring.util.response :refer [file-response resource-response
                                   status content-type]]      
       [cemerick.friend        :as friend]
