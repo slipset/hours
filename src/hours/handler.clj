@@ -101,8 +101,12 @@
 
 (defroutes report-routes
   (GET "/by-week" r (layout/show-report (security/user-info r)
-                                        (report/weekly-report db-spec (security/user-id r)
-                                                              (t/now) report/group-by-date-project))))
+                                        (report/weekly db-spec (security/user-id r)
+                                                              (t/now) report/group-by-date-project)))
+  (GET "/by-week/:client-id" [client-id :as r]  (layout/show-report (security/user-info r)
+                                                      (report/weekly-by-client db-spec (security/user-id r)
+                                                                                      client-id
+                                                                                      (t/now) report/group-by-date-project))))
 
 (defroutes app-routes
   (GET "/" [] (layout/login-page))

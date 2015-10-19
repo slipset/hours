@@ -32,17 +32,30 @@
 
 (defn display-project-day [[key periods]]
   [:tr
-   [:td (time/format-with-tz (first key) time/display-date-formatter)]
-   (display-project (second (second key)) (first (second key)) )
+   [:td (time/format-with-tz (:period-start key) time/display-date-formatter)]
+   (display-project (get-in key [:client :name]) (get-in key [:client :name]) )
    [:td (time/format-minutes (reduce sum 0 periods))]])
+
+(defn find-distinct-clients [report]
+  (->> report
+       (map (fn [r] {:id (get-in (first r) [:client :id]) :name (get-in (first r) [:client :name])} ))
+       (distinct)
+       (into [])))
+
+(defn display-client-li [client]
+  [:li [:a {:href (str "/report/by-week" (when-let [id (:id client)] (str  "/" id)) ) } (:name client)]])
 
 (defn display-report [report]
   [:table.table
    [:tbody
     [:tr
      [:th "Date"]
-     [:th "Project"]     
-     [:th "Total"]
+     [:th.dropdown  [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
+                                         :aria-haspopup "true" :aria-expanded "false"} "Project" [:span.caret]]
+      [:ul.dropdown-menu
+       (map display-client-li (conj (find-distinct-clients report) {:id nil :name "All"}))
+            ]]     
+     [:Th "Total"]
      [:th "&nbsp;"]]
     (map display-project-day report)]])
 
