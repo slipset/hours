@@ -4,6 +4,8 @@
 
 (def custom-formatter (f/formatter "dd/MM-yy"))
 
+(def display-date-formatter (f/formatter "MMM dd"))
+
 (defn trunc-seconds [dt]
   (-> dt
       (t/minus (t/seconds (t/second dt)))
@@ -39,6 +41,11 @@
 
 (defn add-days [dt i]
   (t/plus dt (t/days i)))
+
+(defn format-with-tz
+  ([dt format] (format-with-tz dt format (t/time-zone-for-id "CET")))
+  ([dt format tz-id]
+   (f/unparse (f/with-zone format tz-id) dt)))
 
 (defn format-interval [hours-mins]
   (apply format (cons "%02d:%02d" hours-mins)))

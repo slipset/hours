@@ -32,7 +32,7 @@
 
 (defn display-project-day [[key periods]]
   [:tr
-   [:td (time/->date-dd.mm (first key))]
+   [:td (time/format-with-tz (first key) time/display-date-formatter)]
    (display-project (second (second key)) (first (second key)) )
    [:td (time/format-minutes (reduce sum 0 periods))]])
 
@@ -73,8 +73,6 @@
    [:button.btn.btn-default {:type "submit"} "Go!"] 
    ])
 
-(defn format-with-tz [dt format tz-id]
-  (f/unparse (f/with-zone format (t/time-zone-for-id tz-id)) dt))
 
 (defn display-hours [hours user-id]
   [:table.table
@@ -91,7 +89,7 @@
             stop (c/from-sql-time (:period_end hour))
             diff (t/interval start stop)]
         [:tr
-         [:td  (f/unparse time/custom-formatter start)]
+         [:td  (time/format-with-tz start time/display-date-formatter)]
          (display-project (:name_2 hour) (:name_3 hour))
                   
          [:td (when start (time/->hh:mm-str start) )]
