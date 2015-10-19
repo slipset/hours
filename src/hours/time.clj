@@ -4,6 +4,16 @@
 
 (def custom-formatter (f/formatter "dd/MM-yy"))
 
+(defn trunc-seconds [dt]
+  (-> dt
+      (t/minus (t/seconds (t/second dt)))
+      (t/minus (t/millis (t/milli dt)))))
+
+(defn trunc-hours [dt]
+  (-> (trunc-seconds dt)
+      (t/minus (t/minutes (t/minute dt)))
+      (t/minus (t/hours (t/hour dt)))))
+
 (defn prev-monday [dt]
   (let [mon 1
         today (t/day-of-week dt)]
@@ -48,16 +58,6 @@
   ([date hour tz] 
    (let [fmt (f/with-zone (f/formatter "dd/MM-yyHH:mm") tz)]
      (f/parse fmt (str date hour)))))
-
-(defn trunc-seconds [dt]
-  (-> dt
-      (t/minus (t/seconds (t/second dt)))
-      (t/minus (t/millis (t/milli dt)))))
-
-(defn trunc-hours [dt]
-  (-> (trunc-seconds dt)
-      (t/minus (t/minutes (t/minute dt)))
-      (t/minus (t/hours (t/hour dt)))))
 
 (defn find-total-by-day [[date periods]]
   {date {:start (:start (first periods)) :stop (:stop (last periods))}})
