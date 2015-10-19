@@ -30,7 +30,8 @@
 
 (defn start! [user project date]
   (let [user-id (:workday-id user)
-        period-id (period/start! db-spec user-id project (time/add-now (time/add-this-year (f/parse (f/formatter "dd/MM") date))))]
+        period-id (period/start! db-spec user-id project
+                                 (time/add-now (time/add-this-year (f/parse (f/formatter "dd/MM") date))))]
     (ring.util.response/redirect (str "/user/register/stop/" period-id))))
 
 (defn stop! [user period-id]

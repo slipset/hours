@@ -73,6 +73,9 @@
    [:button.btn.btn-default {:type "submit"} "Go!"] 
    ])
 
+(defn format-with-tz [dt format tz-id]
+  (f/unparse (f/with-zone format (t/time-zone-for-id tz-id)) dt))
+
 (defn display-hours [hours user-id]
   [:table.table
    [:tbody
@@ -91,9 +94,9 @@
          [:td  (f/unparse time/custom-formatter start)]
          (display-project (:name_2 hour) (:name_3 hour))
                   
-         [:td (when start (f/unparse (f/formatters :hour-minute) start))  ]
-         [:td (when stop
-                (f/unparse (f/formatters :hour-minute) stop)) ]
+         [:td (when start (time/->hh:mm-str start) )]
+         [:td (when stop 
+                (time/->hh:mm-str stop))]
          [:td (time/format-interval (time/->hour-mins diff))]
          [:td [:a {:href (str "/period/" (:id hour))} "edit"] " | " [:a {:href (str "/period/" (:id hour) "/delete")} "delete"]]]))]])
 

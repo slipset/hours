@@ -42,9 +42,11 @@
   (let [minutes (t/in-minutes interval)]
     (vector (int (/ minutes 60)) (rem minutes 60))))
 
-(defn ->dt [date hour]
-  (let [fmt (f/formatter "dd/MM-yyHH:mm")]
-    (f/parse fmt (str date hour))))
+(defn ->dt
+  ([date hour] (->dt date hour (t/time-zone-for-id "CET")))
+  ([date hour tz] 
+   (let [fmt (f/with-zone (f/formatter "dd/MM-yyHH:mm") tz)]
+     (f/parse fmt (str date hour)))))
 
 (defn trunc-seconds [dt]
   (-> dt
@@ -69,8 +71,9 @@
 (defn ->date-dd.mm [dt]
   (f/unparse (f/formatter "dd/MM") dt))
 
-(defn ->hh:mm-str [dt]
-  (f/unparse (f/formatters :hour-minute) dt))
+(defn ->hh:mm-str
+  ([dt] (->hh:mm-str dt (t/time-zone-for-id "CET")))
+  ([dt tz] (f/unparse (f/with-zone  (f/formatters :hour-minute) tz) dt)))
 
 (defn add-this-year [dt]
   (->> (t/now)

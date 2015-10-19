@@ -33,7 +33,7 @@
 (defn create-identity [db-spec token user-info]
   (let [user-id (:id (get-or-create-user-id db-spec user-info))]
     {:identity token
-     :user-info (assoc user-info :workday-id user-id)
+     :user-info (assoc user-info :workday-id user-id :tz 2)
      :roles #{::user}}))
 
 (defn credential-fn [db-spec token]
