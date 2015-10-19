@@ -75,6 +75,23 @@
   (layout/show-projects-page user-info
                              (prjct/user-client-projects {:user_id (:workday-id user-info) :client_id client-id} db-spec)))
 
+(defn get-week-start [date]
+  (time/prev-monday (if (= date ":this")
+                      (time/trunc-hours  (t/now))
+                       (f/parse (f/formatters :basic-date) date))))
+ 
+(defn get-week-report [user-id client-id date]
+  (if (= client-id ":all")
+    (report/weekly db-spec
+                   user-id
+                   date
+                   report/group-by-date-project)
+    (report/weekly-by-client db-spec
+                             user-id
+                             client-id
+                             date
+                             report/group-by-date-project)))
+    
 (defroutes user-routes
   (GET "/" request (ring.util.response/redirect "/user/register/start"))
   (GET "/status" request (layout/show-status-page (security/user-info request) request))
@@ -100,13 +117,13 @@
   (GET "/:id/delete" [id :as r] (delete-period! (security/user-id r) id)))
 
 (defroutes report-routes
-  (GET "/by-week" r (layout/show-report (security/user-info r)
-                                        (report/weekly db-spec (security/user-id r)
-                                                              (t/now) report/group-by-date-project)))
-  (GET "/by-week/:client-id" [client-id :as r]  (layout/show-report (security/user-info r)
-                                                      (report/weekly-by-client db-spec (security/user-id r)
-                                                                                      client-id
-                                                                                      (t/now) report/group-by-date-project))))
+  (GET "/by-week" r (ring.util.response/redirect "/report/by-week/:all/:this"))
+  (GET "/by-week/:client-id/:date" [client-id date :as r] (layout/show-report (security/user-info r)
+                                                                              client-id
+                                                                              (get-week-start date)
+                                                                              (get-week-report (security/user-id r)
+                                                                                               client-id
+                                                                                               (get-week-start date)))))
 
 (defroutes app-routes
   (GET "/" [] (layout/login-page))

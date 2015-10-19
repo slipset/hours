@@ -11,15 +11,18 @@
       [hours.security :as security]
       ))
 
-(defn display-week-chooser [mon]
-  (let [prev (time/prev-week mon)
-        next (time/next-week mon)]
-    [:div "Uke " [:a {:href (str "/user/week/" (f/unparse (f/formatters :basic-date) prev )) } (.getWeekOfWeekyear prev) ]
-     " "
-     (.getWeekOfWeekyear mon)
-     " "
-     [:a {:href (str "/user/week/" (f/unparse (f/formatters :basic-date) next )) } (.getWeekOfWeekyear next) ]
-     ]))
+(defn basic-date [date]
+  (f/unparse (f/formatters :basic-date) date))
+
+(defn display-week-chooser [client-id mon]
+  (let [prev-week (basic-date (time/prev-week mon))
+        next-week  (basic-date (time/next-week mon))]
+    [:ul.pull-left.pagination
+     [:li [:a {:href (str  "/report/by-week/" client-id "/" prev-week)} "<"]]
+     (if (= mon (time/prev-monday (t/now)))
+       [:li [:span {:style "color: #777"} "This week"] ]
+       (list  [:li [:span  {:style "color: #777"} (str (f/unparse time/display-date-formatter mon) " - " (f/unparse time/display-date-formatter (t/plus mon (t/days 6))))]]
+              [:li [:a {:href (str  "/report/by-week/" client-id "/" next-week)} ">"]]))]))
 
 (defn display-project [project client]
   [:td  [:h5 {:style "margin-top: 0px; margin-bottom: 0px"} project "&nbsp;" [:small client]]])
@@ -34,7 +37,7 @@
   [:tr
    [:td (time/format-with-tz (:period-start key) time/display-date-formatter)]
    (display-project (get-in key [:project :name]) (get-in key [:client :name]))
-   [:td (time/format-minutes (reduce sum 0 periods))]])
+   [:td.text-right (time/format-minutes (reduce sum 0 periods))]])
 
 (defn find-distinct-clients [report]
   (->> report
@@ -42,22 +45,34 @@
        (distinct)
        (into [])))
 
-(defn display-client-li [client]
-  [:li [:a {:href (str "/report/by-week" (when-let [id (:id client)] (str  "/" id)) ) } (:name client)]])
+(defn display-client-li [date client]
+  [:li [:a {:href (str "/report/by-week/" (:id client) "/" date) } (:name client)]])
 
-(defn display-report [report]
-  [:table.table
-   [:tbody
-    [:tr
-     [:th "Date"]
-     [:th.dropdown  [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
-                                         :aria-haspopup "true" :aria-expanded "false"} "Project" [:span.caret]]
-      [:ul.dropdown-menu
-       (map display-client-li (conj (find-distinct-clients report) {:id nil :name "All"}))
-            ]]     
-     [:Th "Total"]
-     [:th "&nbsp;"]]
-    (map display-project-day report)]])
+(defn grand-total [report]
+  (->> report
+       (mapcat (fn [[_ val]] val))
+       (reduce sum 0)
+       (time/format-minutes)))
+
+(defn display-report [client-id date report]
+  (let [date-str (basic-date date)]
+    [:div
+     [:h1 "Weekly report" [:span.small.pull-right (display-week-chooser client-id date)] ]    
+     [:table.table
+      [:tbody
+       [:tr
+        [:th "Date"]
+        [:th.dropdown  [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
+                                            :aria-haspopup "true" :aria-expanded "false"} "Project" [:span.caret]]
+         [:ul.dropdown-menu
+          (map (partial display-client-li date-str)  (conj (find-distinct-clients report) {:id ":all" :name "All"}))
+          ]]     
+        [:th.text-right "Total"]]
+       (map display-project-day report)
+       [:tr
+        [:td "&nbsp;"]
+        [:td "&nbsp;"]        
+        [:td.text-right (grand-total report)]]]]]))
 
 (defn display-edit-period-end [period]
   [:form {:method "POST" :action (str "/period/" (:id period))}
@@ -83,9 +98,7 @@
    [:div.form-group
     [:label {:for "end"} "End"]
     [:input.form-control {:type "text" :name "end" :id "end" :value (time/->hh:mm-str (c/from-sql-date (:period_end period)))}]]
-   [:button.btn.btn-default {:type "submit"} "Go!"] 
-   ])
-
+   [:button.btn.btn-default {:type "submit"} "Go!"]])
 
 (defn display-hours [hours user-id]
   [:table.table
@@ -93,9 +106,8 @@
     [:tr
      [:th "Date"]
      [:th "Project"]     
-     [:th "Start"]
-     [:th "End"]
-     [:th "Total"]
+     [:th "Period"]
+     [:th.text-right "Total"]
      [:th "&nbsp;"]]
     (for [hour hours]
       (let [start (c/from-sql-time (:period_start hour)) 
@@ -105,11 +117,12 @@
          [:td  (time/format-with-tz start time/display-date-formatter)]
          (display-project (:name_2 hour) (:name_3 hour))
                   
-         [:td (when start (time/->hh:mm-str start) )]
-         [:td (when stop 
-                (time/->hh:mm-str stop))]
-         [:td (time/format-interval (time/->hour-mins diff))]
-         [:td [:a {:href (str "/period/" (:id hour))} "edit"] " | " [:a {:href (str "/period/" (:id hour) "/delete")} "delete"]]]))]])
+         [:td (when start (time/->hh:mm-str start) ) " - "
+          (when stop 
+            (time/->hh:mm-str stop))]
+         
+         [:td.text-right (time/format-interval (time/->hour-mins diff))]
+         [:td.text-right [:a {:href (str "/period/" (:id hour))} "edit"] " | " [:a {:href (str "/period/" (:id hour) "/delete")} "delete"]]]))]])
 
 (defn start-stop [action period-id project content]
   [:div.row
@@ -119,7 +132,6 @@
      (if (= action "start")
        (list
         [:div.input-group-btn
-         #_[:button.btn.btn-default {:id "date-container" :type "button":value (time/->date-dd.mm (t/now))} ]
          [:input.form-control {:type "text" :style "width: 5em" :name "date" :id "date-container" :value (time/->date-dd.mm (t/now))}]]
         [:input.form-control {:type "text" :name "project" :placeholder "Project name..."}]
         [:script "$('#date-container').datepicker({ format: 'dd/mm', weekStart: 1, calendarWeeks: true, autoclose: true, todayHighlight: true, endDate: 'today', orientation: 'top left'});" ])
@@ -275,5 +287,5 @@
 (defn show-not-found [logged-in-user request]
   (page-template logged-in-user (display-not-found request)))
 
-(defn show-report [logged-in-user report]
-  (page-template logged-in-user (display-report report)))
+(defn show-report [logged-in-user client-id week-nr report]
+  (page-template logged-in-user (display-report client-id week-nr report)))

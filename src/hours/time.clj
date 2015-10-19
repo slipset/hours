@@ -17,11 +17,11 @@
       (t/minus (t/hours (t/hour dt)))))
 
 (defn prev-monday [dt]
-  (let [mon 1
-        today (t/day-of-week dt)]
-    (if (= mon today)
-      dt
-      (t/minus dt (t/days (dec today)))))) 
+  (trunc-hours (let [mon 1
+                     today (t/day-of-week dt)]
+                 (if (= mon today)
+                   dt
+                   (t/minus dt (t/days (dec today)))))))
 
 (defn week-period [dt]
   (let [mon (trunc-hours (prev-monday dt))]
