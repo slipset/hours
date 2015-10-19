@@ -33,7 +33,7 @@
 (defn display-project-day [[key periods]]
   [:tr
    [:td (time/format-with-tz (:period-start key) time/display-date-formatter)]
-   (display-project (get-in key [:client :name]) (get-in key [:client :name]) )
+   (display-project (get-in key [:project :name]) (get-in key [:client :name]))
    [:td (time/format-minutes (reduce sum 0 periods))]])
 
 (defn find-distinct-clients [report]
