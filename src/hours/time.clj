@@ -12,8 +12,9 @@
       (t/minus dt (t/days (dec today)))))) 
 
 (defn week-period [dt]
-  (let [mon (prev-monday dt)]
-    [mon (t/plus mon (t/days 7))]))
+  (let [mon (trunc-hours (prev-monday dt))]
+    [mon (-> (t/plus mon (t/days 7))
+             (t/minus (t/millis 1)))]))
 
 (defn prev-week [mon]
   (t/minus mon (t/weeks 1)))
