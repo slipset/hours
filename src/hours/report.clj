@@ -14,9 +14,9 @@
 (defn group-by-date-project [period]
   {:period-start (time/trunc-hours (c/from-sql-time (:period_start period)))
    :client {:id (:id_3 period)
-            :name (:name_3 period)}
+            :name (:name_2 period)}
    :project {:id (:id_2 period)
-             :name (:name_2 period)}
+             :name (:name period)}
    })
 
 (defn weekly [db-spec user-id date group-function]

@@ -29,8 +29,8 @@
 
 (def db-spec {:connection {:connection-uri (env :jdbc-database-url)}})
 
-(defn start! [user-id project date]
-  (let [period-id (period/start! db-spec user-id project
+(defn start! [user-id description project date]
+  (let [period-id (period/start! db-spec user-id description project
                                  (time/add-now (time/add-this-year (f/parse (f/formatter "dd/MM") date))))]
     (ring.util.response/redirect (str "/user/register/stop/" period-id))))
 
@@ -46,8 +46,8 @@
   (prjct/add-project<! {:name name :client_id client-id} db-spec)
   (ring.util.response/redirect "/project/"))
 
-(defn edit-period! [user-id id date start end project]
-  (period/edit-period! db-spec user-id id date start end project)
+(defn edit-period! [user-id id date start end description project]
+  (period/edit-period! db-spec user-id id date start end description project)
   (ring.util.response/redirect "/user/register/start"))
 
 (defn delete-period! [user-id id]
@@ -56,21 +56,21 @@
 
 (defn show-start [user-id]
   (->> (layout/display-hours (period/by-user {:user_id user-id} db-spec))
-       (layout/start-stop "start" "" nil)))
+       (layout/start-stop "start" "" nil nil)))
 
-(defn show-stop [user-id period-id project-name]
+(defn show-stop [user-id period-id description project-name]
   (->> (layout/display-hours (period/by-user {:user_id user-id} db-spec))
-       (layout/start-stop "stop" period-id project-name)))
+       (layout/start-stop "stop" period-id description project-name)))
 
 (defn show-start-stop
   ([user-id]
    (let [unstopped (first (period/find-unstopped db-spec user-id))]
     (if (seq unstopped)
-      (show-stop user-id (:id unstopped) (:name_2 unstopped))
+      (show-stop user-id (:id unstopped) (:description unstopped) (:name unstopped))
       (show-start user-id))))
   ([user-id period-id]
    (let [unstopped (first (period/by-id {:id period-id :user_id user-id} db-spec))]
-     (show-stop user-id (:id unstopped) (:name_2 unstopped)))))
+     (show-stop user-id (:id unstopped) (:description unstopped) (:name unstopped) ))))
 
 (defn show-projects [user-id client-id]
   (layout/display-projects (prjct/user-client-projects {:user_id user-id :client_id client-id} db-spec)))
@@ -101,7 +101,7 @@
   (GET "/status" request (layout/display-status-page request))
   (GET "/register/stop/:period-id" [period-id user-id] (text-html (show-start-stop user-id period-id)))
   (GET "/register/start" [user-id] (text-html (show-start-stop user-id)))
-  (POST "/register/start" [user-id project date] (start! user-id project date))
+  (POST "/register/start" [user-id project description date] (start! user-id description project date))
   (POST "/register/stop" [period-id user-id] (stop! user-id period-id)))
 
 (defroutes client-routes
@@ -117,7 +117,7 @@
 
 (defroutes period-routes
   (GET "/:id" [id user-id] (text-html (layout/display-edit-period (first (period/by-id {:user_id user-id :id id} db-spec)))))
-  (POST "/:id" [id date start end project user-id]  (edit-period! user-id id date start end project))
+  (POST "/:id" [user-id id date start end project description]  (edit-period! user-id id date start end description project))
   (GET "/:id/delete" [id user-id] (delete-period! user-id id)))
 
 (defroutes report-routes

@@ -25,7 +25,7 @@
               [:li [:a {:href (str  "/report/by-week/" client-id "/" next-week)} ">"]]))]))
 
 (defn display-project [project client]
-  [:td  [:h5 {:style "margin-top: 0px; margin-bottom: 0px"} project "&nbsp;" [:small client]]])
+  [:h5 {:style "margin-top: 0px; margin-bottom: 0px"} project "&nbsp;" [:small client]])
 
 (defn sum [acc period]
   (let [start (c/from-sql-time (:period_start period))
@@ -36,7 +36,7 @@
 (defn display-project-day [[key periods]]
   [:tr
    [:td (time/format-with-tz (:period-start key) time/display-date-formatter)]
-   (display-project (get-in key [:project :name]) (get-in key [:client :name]))
+   [:td (display-project (get-in key [:project :name]) (get-in key [:client :name]))]
    [:td.text-right (time/format-minutes (reduce sum 0 periods))]])
 
 (defn find-distinct-clients [report]
@@ -74,24 +74,19 @@
         [:td "&nbsp;"]        
         [:td.text-right (grand-total report)]]]]]))
 
-(defn display-edit-period-end [period]
-  [:form {:method "POST" :action (str "/period/" (:id period))}
-   [:input {:type "hidden" :name "date" :id "date" :value (time/->date-str (c/from-sql-time (:period_start period)))}]
-   [:input {:type "hidden" :name "project" :id "project" :value (:name_2 period)}]
-   [:input {:type "hidden" :name "start" :id "start" :value (time/->hh:mm-str (c/from-date (:start period)))}]
-   [:div.input-group.col-xs-3
-    [:input.form-control {:type "text" :name "end" :size "5" :maxlength "5"}]
-    [:span.input-group-btn
-     [:button.btn.btn-default {:type "submit" } "Stop"]]]])
-
 (defn display-edit-period [period]
   [:form {:method "POST" :action (str "/period/" (:id period))}
    [:div.form-group
     [:label {:for "date"} "Date"]
     [:input.form-control {:type "text" :name "date" :id "date" :value (time/->date-str (c/from-sql-time (:period_start period)))}]]
    [:div.form-group
+    [:label {:for "description"} "Description"]
+    [:input.form-control {:type "text" :name "description" :id "description" :value (:description period)}]]
+
+   [:div.form-group
     [:label {:for "project"} "Project"]
-    [:input.form-control {:type "text" :name "project" :id "project" :value (:name_2 period)}]]
+    [:input.form-control {:type "text" :name "project" :id "project" :value (:name period)}]]
+   
    [:div.form-group
     [:label {:for "start"} "Start"]
     [:input.form-control {:type "text" :name "start" :id "start" :value (time/->hh:mm-str (c/from-date (:period_start period)))}]]
@@ -114,8 +109,8 @@
             stop (c/from-sql-time (:period_end hour))
             diff (t/interval start stop)]
         [:tr
-         [:td  (time/format-with-tz start time/display-date-formatter)]
-         (display-project (:name_2 hour) (:name_3 hour))
+         [:td (time/format-with-tz start time/display-date-formatter)]
+         [:td [:div (display-project (:name hour) (:name_2 hour))] [:span.small (:description hour)]]
                   
          [:td (when start (time/->hh:mm-str start) ) " - "
           (when stop 
@@ -124,7 +119,7 @@
          [:td.text-right (time/format-interval (time/->hour-mins diff))]
          [:td.text-right [:a {:href (str "/period/" (:id hour))} "edit"] " | " [:a {:href (str "/period/" (:id hour) "/delete")} "delete"]]]))]])
 
-(defn start-stop [action period-id project content]
+(defn start-stop [action period-id description project content]
   [:div.row
    [:form {:method "POST" :action (str "/user/register/" action) }
     [:div.input-group
@@ -132,14 +127,18 @@
        (list
         [:div.input-group-btn
          [:input.form-control {:type "text" :style "width: 5em" :name "date" :id "date-container" :value (time/->date-dd.mm (t/now))}]]
+        [:div.input-group-btn {:style "width: 30%"}
+         [:input.form-control {:type "text" :name "description" :placeholder "What are you doing?"}]]
         [:input.form-control {:type "text" :name "project" :placeholder "Project name..."}]
         [:script "$('#date-container').datepicker({ format: 'dd/mm', weekStart: 1, calendarWeeks: true, autoclose: true, todayHighlight: true, endDate: 'today', orientation: 'top left'});" ])
        (list
         [:input {:type "hidden" :name "period-id" :value (str period-id)}]
+        [:div.input-group-btn {:style "width: 30%"}
+         [:input.form-control {:type "text" :name "description" :value description :readonly "readonly"}]]
         [:input.form-control {:type "text" :name "project" :value project :readonly "readonly"}]))
      (if (= action "start")
        [:span.input-group-btn [:button.btn.btn-success {:type "submit" :value "start"} "start"]]
-       [:span.input-group-btn [:button.btn.btn-default {:type "submit" :value "stop"} "stop"]])]] content])
+       [:span.input-group-btn [:button.btn.btn-danger {:type "submit" :value "stop"} "stop"]])]] content])
 
 (defn include-styling []
   (list [:script {:src "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"}]
