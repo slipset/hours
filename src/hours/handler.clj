@@ -121,14 +121,14 @@
   (GET "/:id/delete" [id user-id] (delete-period! user-id id)))
 
 (defroutes report-routes
-  (GET "/by-week" r (ring.util.response/redirect "/report/by-week/:all/:this"))
+  (GET "/by-week" r (redirect "/report/by-week/:all/:this"))
   (GET "/by-week/:client-id/:date" [client-id date user-id] (text-html (layout/display-report
                                                                         client-id
                                                                         (get-week-start date)
                                                                         (get-week-report user-id client-id
                                                                                          (get-week-start date))))))
 (defroutes app-routes
-  (GET "/" [] (layout/render-login))
+  (GET "/" [user-id] (if (empty? user-id) (text-html (layout/render-login)) (redirect "/user")))
   (GET "/status" request (layout/display-status-page request))
   (context "/user" request (friend/wrap-authorize user-routes #{security/user}))
   (context "/client" request (friend/wrap-authorize client-routes #{security/user}))
