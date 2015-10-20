@@ -281,5 +281,8 @@
         session (assoc (:session request) :count (inc count))]
     (-> (ring.util.response/response
               (str "<p>We've hit the session page " (:count session)
-                   " times.</p><p>The current session: " session "</p>"))
+                   " times.</p>"
+                   "<p>The current session: " session "</p>"
+                   "<p>The curren request:" request "</p>"))
+        (ring.util.response/header "Content-type" "text/html; charset=utf-8")
         (assoc :session session))))
