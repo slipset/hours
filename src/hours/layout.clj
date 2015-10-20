@@ -150,7 +150,7 @@
 (defn display-user-nav-bar [userinfo]
   [:li [:p.navbar-text (get userinfo "name") "&nbsp;" [:img {:src (get userinfo "picture") :width "20"}]]])
 
-(defn footer []
+(defn render-footer []
   [:footer.footer {:role "contentinfo"}
      [:div.container
       [:hr
@@ -193,16 +193,6 @@
              [:div.col-lg-4.col-lg-offset-4.col-md-4.col-md-offset-4.col-sm-6.col-sm-offset-3
               [:a.btn.btn-block.btn-social.btn-google {:href  "/user/"}
                [:i.fa.fa-google] "Sign in with Google" ]]]))
-
-(defn show-status-page [logged-in-user request]
-  (let [count (:count (:session request) 0)
-        session (assoc (:session request) :count (inc count))]
-    (-> (ring.util.response/response
-              (page-template (render-navbar logged-in-user)
-                             (str "<p>We've hit the session page " (:count session)
-                                  " times.</p><p>The current session: " session "</p>")
-                             (footer)))
-        (assoc :session session))))
 
 (defn display-clients [clients]
   (list [:table.table
@@ -249,43 +239,51 @@
   (list [:h1 (str "404 Not found: " (:uri request))]
    [:iframe {:width "560" :height "315" :src "https://www.youtube.com/embed/O_ISAntOom0" :frameborder "0" } ]))
 
-(defn page-template [navbar content footer]
-  (html5
-   [:head
-    [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0, user-scalable=no"}]
-    [:title "hours"]
-    (include-styling)]
-   [:body
-    navbar
-    [:div.container content]
-    footer]))
+(defn wrap-page-template [f]
+  (fn [page] (f (list
+                 [:head
+                  [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0, user-scalable=no"}]
+                  [:title "hours"]
+                  (include-styling)]
+                 [:body
+                  (:navbar page) 
+                  [:div.container (:content page)]
+                  (:footer page)]))))
+
+(defn wrap-navbar [f user]
+  (fn [page]
+    (f (assoc page :navbar (render-navbar user)))))
+
+(defn wrap-footer [f]
+  (fn [page]
+    (f (assoc page :footer (footer)))))
 
 (defn page-renderer
-  ([] (fn [content] (page-template (render-navbar) content (footer))))
+  ([] (fn [content] (page-template  content (footer))))
   ([user] (fn [content] (page-template (render-navbar user) content (footer)))))
 
-(def show-login-page (comp (page-renderer) render-login))
+(defn render-html5 [page]
+   (html5 page))
 
-(defn show-hours-page [logged-in-user action project-name period-id report]
-  ((page-renderer logged-in-user) (start-stop action period-id project-name (display-hours report))))
+(defn wrap-in-content [f]
+  (fn [page]
+    (f {:content page})))
 
-(defn show-clients-page [logged-in-user clients]
-  ((page-renderer logged-in-user) (display-clients clients)))
+(defn get-html5
+  ([] (create-page-renderer render-html5 nil))
+  ([user] (create-page-renderer render-html5 user)))
 
-(defn show-add-client-page [logged-in-user]
-  ((page-renderer logged-in-user) (display-add-client)))
+(defn create-page-renderer [renderer user]
+  (-> renderer
+      (wrap-page-template)
+      (wrap-navbar user)
+      (wrap-footer)
+      (wrap-in-content)))
 
-(defn show-projects-page [logged-in-user projects]
-  ((page-renderer logged-in-user) (display-projects projects)))
-
-(defn show-add-project-page [logged-in-user client]
-  ((page-renderer logged-in-user) (display-add-project client)))
-
-(defn show-edit-period-page [logged-in-user period]
-  ((page-renderer logged-in-user) (display-edit-period period)))
-
-(defn show-not-found [logged-in-user request]
-  ((page-renderer logged-in-user) (display-not-found request)))
-
-(defn show-report [logged-in-user client-id monday report]
-  ((page-renderer logged-in-user) (display-report client-id monday report))) 
+(defn display-status-page [request]
+  (let [count (:count (:session request) 0)
+        session (assoc (:session request) :count (inc count))]
+    (-> (ring.util.response/response
+              (str "<p>We've hit the session page " (:count session)
+                   " times.</p><p>The current session: " session "</p>"))
+        (assoc :session session))))
