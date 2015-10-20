@@ -258,16 +258,12 @@
   (fn [page]
     (f (assoc page :footer (render-footer)))))
 
-(defn page-renderer
-  ([] (fn [content] (page-template  content (footer))))
-  ([user] (fn [content] (page-template (render-navbar user) content (footer)))))
-
-(defn render-html5 [page]
-   (html5 page))
-
 (defn wrap-in-content [f]
   (fn [page]
     (f {:content page})))
+
+(defn render-html5 [page]
+   (html5 page))
 
 (defn get-html5
   ([] (create-page-renderer render-html5 nil))
