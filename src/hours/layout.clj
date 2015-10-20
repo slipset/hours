@@ -256,7 +256,7 @@
 
 (defn wrap-footer [f]
   (fn [page]
-    (f (assoc page :footer (footer)))))
+    (f (assoc page :footer (render-footer)))))
 
 (defn page-renderer
   ([] (fn [content] (page-template  content (footer))))
