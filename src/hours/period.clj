@@ -18,14 +18,16 @@
   (delete! {:id id :user_id user-id} db-spec))
 
 (defn edit-period! [db-spec user-id id date start end project]
-  (let [start (time/->dt date start)
-        end (time/->dt date end)
+  (let [start (c/to-sql-time (time/->dt date start))
+        end (if (empty? end)
+              nil
+              (c/to-sql-time (time/->dt date end))) 
         project-id (:id (first (prjct/by-name {:name project :user_id user-id} db-spec)))]
     (update! {:id id
               :project_id project-id
               :user_id user-id
-              :start (c/to-sql-time start)
-              :end (c/to-sql-time end)} db-spec)))
+              :start start
+              :end end} db-spec)))
 
 (defn find-unstopped [db-spec user-id]
   (unstopped {:user_id user-id} db-spec))

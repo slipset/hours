@@ -97,7 +97,7 @@
     [:input.form-control {:type "text" :name "start" :id "start" :value (time/->hh:mm-str (c/from-date (:period_start period)))}]]
    [:div.form-group
     [:label {:for "end"} "End"]
-    [:input.form-control {:type "text" :name "end" :id "end" :value (time/->hh:mm-str (c/from-sql-date (:period_end period)))}]]
+    [:input.form-control {:type "text" :name "end" :id "end" :value (when-let [end (:period_end period)] (time/->hh:mm-str (c/from-sql-date end)))}]]
    [:button.btn.btn-default {:type "submit"} "Go!"]])
 
 (defn display-hours [hours]
