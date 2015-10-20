@@ -100,7 +100,7 @@
     [:input.form-control {:type "text" :name "end" :id "end" :value (time/->hh:mm-str (c/from-sql-date (:period_end period)))}]]
    [:button.btn.btn-default {:type "submit"} "Go!"]])
 
-(defn display-hours [hours user-id]
+(defn display-hours [hours]
   [:table.table
    [:tbody
     [:tr
@@ -127,7 +127,6 @@
 (defn start-stop [action period-id project content]
   [:div.row
    [:form {:method "POST" :action (str "/user/register/" action) }
-    (anti-forgery-field)
     [:div.input-group
      (if (= action "start")
        (list
@@ -158,67 +157,51 @@
        [:p [:i.fa.fa-github] "&nbsp;"[:a {:href "https://github.com/slipset/"} "slipset"] "/"
         [:a {:href "https://github.com/slipset/hours/"} "hours"] " | " [:i.fa.fa-twitter] [:a {:href "https://twitter.com/slipset/"} "slipset"]] ]]])
 
-(defn page-template [logged-in-user content]
-  (html5
-   [:head
-    [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0, user-scalable=no"}]
-    [:title "hours"]
-    (include-styling)]
-   [:body
-    [:nav.navbar.navbar-inverse
-     [:div.container-fluid
-      [:div.navbar-header
-       [:button.navbar-toggle {:type "button" :data-toggle "collapse" :data-target "#myNavbar"}
-        [:span.icon-bar]
-        [:span.icon-bar]
-        [:span.icon-bar]]
-       [:a.navbar-brand {:href "/user"} "workday"]]
-      [:div.collapse.navbar-collapse {:id "myNavbar"}
-       [:ul.nav.navbar-nav
-        [:li [:a {:href "/user"} "Home"]]
-        [:li [:a {:href "/user/status"} "Status"]]
-        [:li [:a {:href "/client"} "Clients"]]
-        [:li.dropdown
-         [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
-                              :aria-haspopup "true" :aria-expanded "false"} "Reports" [:span.caret]]
-         
-         [:ul.dropdown-menu
-          [:li [:a {:href "/report/by-week"} "Weekly"]]]]]
-       [:ul.nav.navbar-nav.navbar-right
-        (display-user-nav-bar logged-in-user)
-        [:li [:a {:href "/logout"} [:span.glyphicon.glyphicon-log-out] "Logout"]]]
-       ]]]
-    [:div.container content]
-    (footer)]))
+(defn render-navbar
+  ([] (render-navbar nil))
+  ([logged-in-user]
+   [:nav.navbar.navbar-inverse {:role "banner"}
+    [:div.container-fluid
+     [:div.navbar-header
+      (when logged-in-user
+        [:button.navbar-toggle {:type "button" :data-toggle "collapse" :data-target "#myNavbar"}
+         [:span.icon-bar]
+         [:span.icon-bar]
+         [:span.icon-bar]])
+      [:a.navbar-brand {:href "/"} "workday"]]
+     (when logged-in-user
+       [:div.collapse.navbar-collapse {:id "myNavbar"}
+        [:ul.nav.navbar-nav
+         [:li [:a {:href "/user"} "Home"]]
+         [:li [:a {:href "/user/status"} "Status"]]
+         [:li [:a {:href "/client"} "Clients"]]
+         [:li.dropdown
+          [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
+                               :aria-haspopup "true" :aria-expanded "false"} "Reports" [:span.caret]]
+          
+          [:ul.dropdown-menu
+           [:li [:a {:href "/report/by-week"} "Weekly"]]]]]
+        [:ul.nav.navbar-nav.navbar-right
+         (display-user-nav-bar logged-in-user)
+         [:li [:a {:href "/logout"} [:span.glyphicon.glyphicon-log-out] "Logout"]]]
+        ])]]))
 
-(defn login-page []
-  (html5
-   [:head
-    [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0, user-scalable=no"}]
-    [:title "hours"]
-    (include-styling)]
-   [:body
-    [:nav.navbar.navbar-inverse {:role "banner"}
-     [:div.container-fluid
-      [:div.navbar-header
-       [:a.navbar-brand {:href "/"} "workday"]]]]
-
-    [:div.container
-     [:div.page-header
-      [:h1 "Sign in"]]
-     [:div.row
-      [:div.col-lg-4.col-lg-offset-4.col-md-4.col-md-offset-4.col-sm-6.col-sm-offset-3
-       [:a.btn.btn-block.btn-social.btn-google {:href  "/user/"}
-        [:i.fa.fa-google] "Sign in with Google" ]]]]
-    (footer)]))
+(defn render-login []
+  (list  [:div.page-header
+             [:h1 "Sign in"]]
+            [:div.row
+             [:div.col-lg-4.col-lg-offset-4.col-md-4.col-md-offset-4.col-sm-6.col-sm-offset-3
+              [:a.btn.btn-block.btn-social.btn-google {:href  "/user/"}
+               [:i.fa.fa-google] "Sign in with Google" ]]]))
 
 (defn show-status-page [logged-in-user request]
   (let [count (:count (:session request) 0)
         session (assoc (:session request) :count (inc count))]
     (-> (ring.util.response/response
-              (page-template logged-in-user
-               (str "<p>We've hit the session page " (:count session)
-                    " times.</p><p>The current session: " session "</p>")))
+              (page-template (render-navbar logged-in-user)
+                             (str "<p>We've hit the session page " (:count session)
+                                  " times.</p><p>The current session: " session "</p>")
+                             (footer)))
         (assoc :session session))))
 
 (defn display-clients [clients]
@@ -266,26 +249,43 @@
   (list [:h1 (str "404 Not found: " (:uri request))]
    [:iframe {:width "560" :height "315" :src "https://www.youtube.com/embed/O_ISAntOom0" :frameborder "0" } ]))
 
-(defn show-hours-page [logged-in-user action content period-id periods]
-  (page-template logged-in-user (start-stop action period-id content (display-hours periods nil))))
+(defn page-template [navbar content footer]
+  (html5
+   [:head
+    [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0, user-scalable=no"}]
+    [:title "hours"]
+    (include-styling)]
+   [:body
+    navbar
+    [:div.container content]
+    footer]))
+
+(defn page-renderer
+  ([] (fn [content] (page-template (render-navbar) content (footer))))
+  ([user] (fn [content] (page-template (render-navbar user) content (footer)))))
+
+(def show-login-page (comp (page-renderer) render-login))
+
+(defn show-hours-page [logged-in-user action project-name period-id report]
+  ((page-renderer logged-in-user) (start-stop action period-id project-name (display-hours report))))
 
 (defn show-clients-page [logged-in-user clients]
-  (page-template logged-in-user (display-clients clients)))
+  ((page-renderer logged-in-user) (display-clients clients)))
 
 (defn show-add-client-page [logged-in-user]
-  (page-template logged-in-user (display-add-client)))
+  ((page-renderer logged-in-user) (display-add-client)))
 
 (defn show-projects-page [logged-in-user projects]
-  (page-template logged-in-user (display-projects projects)))
+  ((page-renderer logged-in-user) (display-projects projects)))
 
 (defn show-add-project-page [logged-in-user client]
-  (page-template logged-in-user (display-add-project client)))
+  ((page-renderer logged-in-user) (display-add-project client)))
 
 (defn show-edit-period-page [logged-in-user period]
-  (page-template logged-in-user (display-edit-period period)))
+  ((page-renderer logged-in-user) (display-edit-period period)))
 
 (defn show-not-found [logged-in-user request]
-  (page-template logged-in-user (display-not-found request)))
+  ((page-renderer logged-in-user) (display-not-found request)))
 
-(defn show-report [logged-in-user client-id week-nr report]
-  (page-template logged-in-user (display-report client-id week-nr report)))
+(defn show-report [logged-in-user client-id monday report]
+  ((page-renderer logged-in-user) (display-report client-id monday report))) 

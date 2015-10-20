@@ -126,7 +126,7 @@
                                                                                                (get-week-start date)))))
 
 (defroutes app-routes
-  (GET "/" [] (layout/login-page))
+  (GET "/" [] (layout/show-login-page))
   (GET "/status" request (layout/show-status-page {} request))
   (context "/user" request (friend/wrap-authorize user-routes #{security/user}))
   (context "/client" request (friend/wrap-authorize client-routes #{security/user}))
