@@ -265,16 +265,16 @@
 (defn render-html5 [page]
    (html5 page))
 
-(defn get-html5
-  ([] (create-page-renderer render-html5 nil))
-  ([user] (create-page-renderer render-html5 user)))
-
 (defn create-page-renderer [renderer user]
   (-> renderer
       (wrap-page-template)
       (wrap-navbar user)
       (wrap-footer)
       (wrap-in-content)))
+
+(defn get-html5
+  ([] (create-page-renderer render-html5 nil))
+  ([user] (create-page-renderer render-html5 user)))
 
 (defn display-status-page [request]
   (let [count (:count (:session request) 0)
