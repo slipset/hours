@@ -1,0 +1,2 @@
+{:up ["ALTER TABLE workday_period RENAME COLUMN name to description"]
+ :down ["ALTER TABLE workday_period RENAME COLUMN description to name"]}
