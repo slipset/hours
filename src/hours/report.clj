@@ -22,12 +22,11 @@
                        (f/parse (f/formatters :basic-date) date))))
  
 (defn group-by-date-project [period]
-  {:period-start (time/trunc-hours (c/from-sql-time (:period_start period)))
-   :client {:id (:id_3 period)
+  {:client {:id (:id_3 period)
             :name (:name_2 period)}
    :project {:id (:id_2 period)
              :name (:name period)}
-   })
+   :period-start (time/trunc-hours (c/from-sql-time (:period_start period)))})
 
 (defn sum [acc period]
   (let [start (c/from-sql-time (:period_start period))
@@ -40,13 +39,25 @@
        (mapcat (fn [[_ val]] val))
        (reduce sum 0)))
 
+(defn get-client [line]
+  {:id (get-in (first line) [:client :id]) :name (get-in (first line) [:client :name])})
+
 (defn distinct-clients [report]
   (->> report
-       (map (fn [r] {:id (get-in (first r) [:client :id]) :name (get-in (first r) [:client :name])} ))
+       (map get-client)
        (distinct)
        (cons {:id ":all" :name "All"})
        (sort-by :name)
        (into [])))
+
+(defn distinct-projects [report]
+  (->> report
+       (map (fn [r] {:id (get-in (first r) [:project :id]) :name (get-in (first r) [:project :name])
+                     :client (get-client r)}))
+       (distinct)
+       (sort-by :name)
+       (into [])))
+
 
 (defn decorate
   ([start end report] (format start end nil report))
@@ -54,6 +65,7 @@
                                  :grand-total (grand-total report)
                                  :client-id client-id
                                  :clients (distinct-clients report)
+                                 :projects (distinct-projects report)
                                  :period-start start
                                  :period-end end}))
 
@@ -69,6 +81,6 @@
                  (weekly db-spec user-id week-start week-end )
                  (weekly db-spec user-id week-start week-end client-id))]
     (->> report
-         (group-by group-by-date-project)
          (sort-by :period-start)
+         (group-by group-by-date-project)
          (decorate week-start week-end client-id))))
