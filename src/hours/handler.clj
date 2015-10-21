@@ -75,22 +75,6 @@
 (defn show-projects [user-id client-id]
   (layout/display-projects (prjct/user-client-projects {:user_id user-id :client_id client-id} db-spec)))
 
-(defn get-week-start [date]
-  (time/prev-monday (if (= date ":this")
-                      (time/trunc-hours  (t/now))
-                       (f/parse (f/formatters :basic-date) date))))
- 
-(defn get-week-report [user-id client-id date]
-  (if (= client-id ":all")
-    (report/weekly db-spec
-                   user-id
-                   date
-                   report/group-by-date-project)
-    (report/weekly-by-client db-spec
-                             user-id
-                             client-id
-                             date
-                             report/group-by-date-project)))
 
 (defn text-html [resp]
   (-> (response resp)
@@ -123,10 +107,8 @@
 (defroutes report-routes
   (GET "/by-week" r (redirect "/report/by-week/:all/:this"))
   (GET "/by-week/:client-id/:date" [client-id date user-id] (text-html (layout/display-report
-                                                                        client-id
-                                                                        (get-week-start date)
-                                                                        (get-week-report user-id client-id
-                                                                                         (get-week-start date))))))
+                                                                        (report/get-weekly-report db-spec user-id client-id date)))))
+
 (defroutes app-routes
   (GET "/" [user-id] (if (empty? user-id) (text-html (layout/render-login)) (redirect "/user")))
   (GET "/status" request (layout/display-status-page request))

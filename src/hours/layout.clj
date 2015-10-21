@@ -14,24 +14,18 @@
 (defn basic-date [date]
   (f/unparse (f/formatters :basic-date) date))
 
-(defn display-week-chooser [client-id mon]
-  (let [prev-week (basic-date (time/prev-week mon))
-        next-week  (basic-date (time/next-week mon))]
+(defn display-week-chooser [client-id start end]
+  (let [prev-week (basic-date (time/prev-week start))
+        next-week  (basic-date (time/next-week end))]
     [:ul.pull-left.pagination
      [:li [:a {:href (str  "/report/by-week/" client-id "/" prev-week)} "<"]]
-     (if (= mon (time/prev-monday (t/now)))
+     (if (= start (time/prev-monday (t/now)))
        [:li [:span {:style "color: #777"} "This week"] ]
-       (list  [:li [:span  {:style "color: #777"} (str (f/unparse time/display-date-formatter mon) " - " (f/unparse time/display-date-formatter (t/plus mon (t/days 6))))]]
+       (list  [:li [:span  {:style "color: #777"} (str (f/unparse time/display-date-formatter start) " - " (f/unparse time/display-date-formatter (t/plus end (t/days 6))))]]
               [:li [:a {:href (str  "/report/by-week/" client-id "/" next-week)} ">"]]))]))
 
 (defn display-project [project client]
   [:h5 {:style "margin-top: 0px; margin-bottom: 0px"} project "&nbsp;" [:small client]])
-
-(defn sum [acc period]
-  (let [start (c/from-sql-time (:period_start period))
-        stop (c/from-sql-time (:period_end period))
-        minutes (t/in-minutes (t/interval start stop))]
-    (+ acc minutes)))
 
 (defn display-project-day [[key periods]]
   [:tr
@@ -39,25 +33,13 @@
    [:td (display-project (get-in key [:project :name]) (get-in key [:client :name]))]
    [:td.text-right (time/format-minutes (reduce sum 0 periods))]])
 
-(defn find-distinct-clients [report]
-  (->> report
-       (map (fn [r] {:id (get-in (first r) [:client :id]) :name (get-in (first r) [:client :name])} ))
-       (distinct)
-       (into [])))
-
 (defn display-client-li [date client]
   [:li [:a {:href (str "/report/by-week/" (:id client) "/" date) } (:name client)]])
 
-(defn grand-total [report]
-  (->> report
-       (mapcat (fn [[_ val]] val))
-       (reduce sum 0)
-       (time/format-minutes)))
-
-(defn display-report [client-id date report]
+(defn display-report [{:keys [client-id report grand-total date clients period-start period-end]}]
   (let [date-str (basic-date date)]
     [:div
-     [:h1 "Weekly report" [:span.small.pull-right (display-week-chooser client-id date)] ]    
+     [:h1 "Weekly report" [:span.small.pull-right (display-week-chooser client-id period-start period-end)] ]    
      [:table.table
       [:tbody
        [:tr
@@ -65,14 +47,14 @@
         [:th.dropdown  [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
                                             :aria-haspopup "true" :aria-expanded "false"} "Project" [:span.caret]]
          [:ul.dropdown-menu
-          (map (partial display-client-li date-str)  (conj (find-distinct-clients report) {:id ":all" :name "All"}))
+          (map (partial display-client-li date-str) clients)
           ]]     
         [:th.text-right "Total"]]
        (map display-project-day report)
        [:tr
         [:td "&nbsp;"]
         [:td "&nbsp;"]        
-        [:td.text-right (grand-total report)]]]]]))
+        [:td.text-right (time/format-minutes grand-total)]]]]]))
 
 (defn display-edit-period [period]
   [:form {:method "POST" :action (str "/period/" (:id period))}
