@@ -1,6 +1,7 @@
 (ns hours.layout
     (:require
-      [hiccup.core :refer [html]]
+      [hiccup.core :refer [html ]]
+      [hiccup.form :refer [select-options ]]      
       [hiccup.page :refer [html5 include-js include-css]]
       [ring.util.anti-forgery :refer [anti-forgery-field]]
       [ring.util.response]
@@ -102,7 +103,7 @@
         [:td.text-right (time/format-minutes grand-total)]]]]]))
 
 
-(defn display-edit-period [period]
+(defn display-edit-period [period projects]
   [:form {:method "POST" :action (str "/period/" (:id period))}
    [:div.form-group
     [:label {:for "date"} "Date"]
@@ -113,7 +114,9 @@
 
    [:div.form-group
     [:label {:for "project"} "Project"]
-    [:input.form-control {:type "text" :name "project" :id "project" :value (:name period)}]]
+    [:select.form-control {:name "project-id" :id "project"}
+     (map (fn [p] [:option {:value (:id p) :selected (= (:name p) (:name period))} (str (:name p) " - " (:name_2 p))]) projects)
+     ]]
    
    [:div.form-group
     [:label {:for "start"} "Start"]
@@ -147,7 +150,7 @@
          [:td.text-right (time/format-interval (time/->hour-mins diff))]
          [:td.text-right [:a {:href (str "/period/" (:id hour))} "edit"] " | " [:a {:href (str "/period/" (:id hour) "/delete")} "delete"]]]))]])
 
-(defn start-stop [action period-id description project content]
+(defn start-stop [action period-id description project projects content]
   [:div.row
    [:form {:method "POST" :action (str "/user/register/" action) }
     [:div.input-group
@@ -157,7 +160,9 @@
          [:input.form-control {:type "text" :style "width: 5em" :name "date" :id "date-container" :value (time/->date-dd.mm (t/now))}]]
         [:div.input-group-btn {:style "width: 30%"}
          [:input.form-control {:type "text" :name "description" :placeholder "What are you doing?"}]]
-        [:input.form-control {:type "text" :name "project" :placeholder "Project name..."}]
+        [:select.form-control {:name "project-id"}
+         (map (fn [p] [:option {:value (:id p)} (str (:name p) " - " (:name_2 p))]) projects)
+         ]
         [:script "$('#date-container').datepicker({ format: 'dd/mm', weekStart: 1, calendarWeeks: true, autoclose: true, todayHighlight: true, endDate: 'today', orientation: 'top left'});" ])
        (list
         [:input {:type "hidden" :name "period-id" :value (str period-id)}]
