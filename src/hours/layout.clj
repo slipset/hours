@@ -37,35 +37,10 @@
         minutes (t/in-minutes (t/interval start stop))]
     (+ acc minutes)))
 
-(defn display-project-day [[key periods]]
-  [:tr
-   [:td (time/format-with-tz (:period-start key) time/display-date-formatter)]
-   [:td (display-project (get-in key [:project :name]) (get-in key [:client :name]))]
-   [:td.text-right (time/format-minutes (reduce sum 0 periods))]])
-
 (defn display-client-li [date client]
   [:li [:a {:href (str "/report/by-week/" (:id client) "/" date) } (:name client)]])
 
-(defn display-report [{:keys [client-id report grand-total date clients period-start period-end]}]
-  (let [date-str (basic-date date)]
-    [:div
-     [:h1 "Weekly report" [:span.small.pull-right (display-week-chooser client-id period-start period-end)] ]    
-     [:table.table
-      [:tbody
-       [:tr
-        [:th "Date"]
-        [:th.dropdown  [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
-                                            :aria-haspopup "true" :aria-expanded "false"} "Project" [:span.caret]]
-         [:ul.dropdown-menu
-          (map (partial display-client-li date-str) clients)]]     
-        [:th.text-right "Total"]]
-       (sort-by (comp first first) (map display-project-day))
-       [:tr
-        [:td "&nbsp;"]
-        [:td "&nbsp;"]        
-        [:td.text-right (time/format-minutes grand-total)]]]]]))
-
-(defn display-project-day2 [report project dt]
+(defn display-project-day [report project dt]
   (let [client (:client project)
         key {:period-start dt :project (dissoc project :client) :client client}
         periods (get report key)]
@@ -74,7 +49,7 @@
 (defn display-project-week [report period-start project]
   [:tr
    [:td (display-project (:name project) (get-in project [:client :name]))]
-   (map (partial display-project-day2 report project) (time/week period-start)) ])
+   (map (partial display-project-day report project) (time/week period-start)) ])
 
 (defn display-day-total [report dt]
   [:td  (->> report 
@@ -84,7 +59,7 @@
              (time/format-minutes))])
 
 (defn display-weekly-report [{:keys [client-id report grand-total date clients projects period-start period-end]}]
-  (let [date-str (basic-date date)]
+  (let [date-str (basic-date period-start)]
     [:div
      [:h1 "Weekly report" [:span.small.pull-right (display-week-chooser client-id period-start period-end)] ]    
      [:table.table
