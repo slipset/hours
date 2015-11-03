@@ -25,7 +25,7 @@
      [:li [:a {:href (str  "/report/by-week/" client-id "/" prev-week)} "<"]]
      (if (= start (time/prev-monday (t/now)))
        [:li [:span {:style "color: #777"} "This week"] ]
-       (list  [:li [:span  {:style "color: #777"} (str (f/unparse time/display-date-formatter start) " - " (f/unparse time/display-date-formatter (t/plus end (t/days 6))))]]
+       (list  [:li [:span  {:style "color: #777"} (str (f/unparse time/display-date-formatter start) " - " (f/unparse time/display-date-formatter end))]]
               [:li [:a {:href (str  "/report/by-week/" client-id "/" next-week)} ">"]]))]))
 
 (defn display-project [project client]
@@ -107,7 +107,8 @@
   [:form {:method "POST" :action (str "/period/" (:id period))}
    [:div.form-group
     [:label {:for "date"} "Date"]
-    [:input.form-control {:type "text" :name "date" :id "date" :value (time/->date-str (c/from-sql-time (:period_start period)))}]]
+    [:input.form-control {:type "text" :name "date"
+                          :id "date" :value (time/->date-str (c/from-sql-time (:period_start period)))}]]
    [:div.form-group
     [:label {:for "description"} "Description"]
     [:input.form-control {:type "text" :name "description" :id "description" :value (:description period)}]]
