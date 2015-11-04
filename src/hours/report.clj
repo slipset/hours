@@ -52,7 +52,8 @@
 
 (defn distinct-projects [report]
   (->> report
-       (map (fn [r] {:id (get-in (first r) [:project :id]) :name (get-in (first r) [:project :name])
+       (map (fn [r] {:id (get-in (first r) [:project :id])
+                     :name (get-in (first r) [:project :name])
                      :color (get-in (first r) [:project :color])
                      :client (get-client r)}))
        (distinct)

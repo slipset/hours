@@ -42,13 +42,13 @@
 
 (defn display-project-day [report project dt]
   (let [client (:client project)
-        key {:period-start dt :project (dissoc project :client) :client client}
+        key {:period-start dt :project (dissoc project :client :color) :client client}
         periods (get report key)]
     [:td  (time/format-minutes (reduce sum 0 periods))]))
 
 (defn display-project-week [report period-start project]
   [:tr
-   [:td (display-project (:name project) (get-in project [:client :name]) (:color project))]
+   [:td (str project) (display-project (:name project) (get-in project [:client :name]) (:color project))]
    (map (partial display-project-day report project) (time/week period-start))])
 
 (defn display-day-total [report dt]
@@ -286,7 +286,6 @@
     (display-color-chooser colors)]
     [:span.input-group-btn
      [:button.btn.btn-success {:type "submit"} "Go!"]]])
-
 
 (defn display-not-found [request]
   (list [:h1 (str "404 Not found: " (:uri request))]
