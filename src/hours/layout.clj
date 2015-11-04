@@ -48,7 +48,7 @@
 
 (defn display-project-week [report period-start project]
   [:tr
-   [:td (str project) (display-project (:name project) (get-in project [:client :name]) (:color project))]
+   [:td (display-project (:name project) (get-in project [:client :name]) (:color project))]
    (map (partial display-project-day report project) (time/week period-start))])
 
 (defn display-day-total [report dt]
