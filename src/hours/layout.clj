@@ -28,8 +28,8 @@
        (list  [:li [:span  {:style "color: #777"} (str (f/unparse time/display-date-formatter start) " - " (f/unparse time/display-date-formatter end))]]
               [:li [:a {:href (str  "/report/by-week/" client-id "/" next-week)} ">"]]))]))
 
-(defn display-project [project client]
-  [:h5 {:style "margin-top: 0px; margin-bottom: 0px"} project "&nbsp;" [:small client]])
+(defn display-project [project client color]
+  [:h5 {:style "margin-top: 0px; margin-bottom: 0px;"} [:span {:style (str "padding:2px;background-color:#" color)} project] "&nbsp;" [:small client]])
 
 (defn sum [acc period]
   (let [start (c/from-sql-time (:period_start period))
@@ -48,8 +48,8 @@
 
 (defn display-project-week [report period-start project]
   [:tr
-   [:td (display-project (:name project) (get-in project [:client :name]))]
-   (map (partial display-project-day report project) (time/week period-start)) ])
+   [:td (display-project (:name project) (get-in project [:client :name]) (:color project))]
+   (map (partial display-project-day report project) (time/week period-start))])
 
 (defn display-day-total [report dt]
   [:td  (->> report 
@@ -117,7 +117,7 @@
             diff (t/interval start stop)]
         [:tr
          [:td (time/format-with-tz start time/display-date-formatter)]
-         [:td [:div (display-project (:name hour) (:name_2 hour))] [:span.small (:description hour)]]
+         [:td [:div (display-project (:name hour) (:name_2 hour) (:color hour))] [:span.small (:description hour)]]
                   
          [:td (when start (time/->hh:mm-str start) ) " - "
           (when stop 
@@ -228,20 +228,65 @@
             [:tbody
              [:tr
               [:th "Name"]
-              [:th "Client" ]]
+              [:th "Client" ]
+              [:th "&nbsp;"]]
              (for [project projects]
                [:tr
-                [:td (:name project)]
-                [:td (:name_2 project)]])]]
+                [:td [:span {:style (str "background-color:#" (:color project))} (:name project)]]
+                [:td (:name_2 project)]
+                [:td [:a {:href (str "/project/edit/" (:id project))} "edit"]]])]]
      [:div [:a {:href (str "/project/add/" client-id)} "Add project"]]]))
+
+(def colors ["D4D8D1" "A8A8A1" "AA9A66" "B74934" "577492" "67655D" "332C2F"])
+
+(defn display-color-li [color]
+  [:li {:data-value color} [:a {:href "#"} [:span {:style (str "display:inline-block;width:20px;height:15px;background-color:#" color)}] [:span.value (str "#" color) ]]])
+
+(defn display-color-chooser [colors]
+  (list
+   [:button.form-control.btn.btn-default.dropdown-toggle {:type "button" :data-toggle "dropdown" :id "color-label" }
+    [:span.value {} "Color"] [:span.caret]]
+   [:input {:type "hidden" :id "color" :name "color"}]
+   [:ul.dropdown-menu
+    (map display-color-li colors)]
+   [:script "$('.dropdown-menu li').click(function () {
+    var color = $(this).attr('data-value');
+    $('#color-label').attr('style', 'background-color:#' + color)
+    $('#color').val(color);
+    console.log( $('#color').val());});"]))
 
 (defn display-add-project [client]
   [:form {:method "POST" :action (str "/project/add/" (:id client))}
-    (anti-forgery-field)
-   [:div.input-group
-    [:input.form-control {:type "text" :name "name" :placeholder "project name..."}]
-     [:span.input-group-btn
-      [:button.btn.btn-default {:type "submit"} "Add"]]]])
+   (anti-forgery-field)
+
+   [:div.input-group-btn {:style "width:70%"}
+    [:input.form-control {:type "text" :name "name" :placeholder "project name..."}]]
+   [:div.input-group-btn {:style "width:10%"}
+    (display-color-chooser colors)]
+    [:span.input-group-btn
+     [:button.btn.btn-default {:type "submit"} "Add"]]])
+
+(defn display-add-project [client]
+  [:form {:method "POST" :action (str "/project/add/" (:id client))}
+   (anti-forgery-field)
+
+   [:div.input-group-btn {:style "width:70%"}
+    [:input.form-control {:type "text" :name "name" :placeholder "project name..."}]]
+   [:div.input-group-btn {:style "width:10%"}
+    (display-color-chooser colors)]
+    [:span.input-group-btn
+     [:button.btn.btn-default {:type "submit"} "Add"]]])
+
+(defn display-edit-project [project]
+  [:form {:method "POST" :action (str "/project/edit/" (:id project))}
+   (anti-forgery-field)
+   [:div.input-group-btn {:style "width:70%"}
+    [:input.form-control {:type "text" :name "name" :value (:name project)} ]]
+   [:div.input-group-btn {:style "width:10%"}
+    (display-color-chooser colors)]
+    [:span.input-group-btn
+     [:button.btn.btn-success {:type "submit"} "Go!"]]])
+
 
 (defn display-not-found [request]
   (list [:h1 (str "404 Not found: " (:uri request))]

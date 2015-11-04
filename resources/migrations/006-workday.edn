@@ -1,0 +1,2 @@
+{:up ["ALTER TABLE workday_project add column color text"]
+ :down ["ALTER TABLE workday_project drop column color"]}

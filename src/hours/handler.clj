@@ -42,8 +42,12 @@
   (client/add-client<! {:name name :user_id user-id} db-spec)
   (ring.util.response/redirect "/client/"))
 
-(defn add-project! [client-id name]
-  (prjct/add-project<! {:name name :client_id client-id} db-spec)
+(defn add-project! [client-id name color]
+  (prjct/add<! {:name name :client_id client-id :color color} db-spec)
+  (ring.util.response/redirect "/project/"))
+
+(defn edit-project! [project-id name color]
+  (prjct/update! {:name name :project_id project-id :color color} db-spec)
   (ring.util.response/redirect "/project/"))
 
 (defn edit-period! [user-id id date start end description project-id]
@@ -99,7 +103,9 @@
 (defroutes project-routes
   (GET "/" [user-id] (text-html (layout/display-projects (prjct/user-projects {:user_id user-id} db-spec))))
   (GET "/add/:client-id" [client-id user-id] (text-html (layout/display-add-project (first (client/user-client {:user_id user-id :client_id client-id} db-spec)))))
-  (POST "/add/:client-id" [client-id name] (add-project! client-id name)))
+  (GET "/edit/:project-id" [project-id user-id] (text-html (layout/display-edit-project (first (prjct/user-project {:user_id user-id :project_id project-id} db-spec)))))
+  (POST "/edit/:project-id" [project-id name color] (edit-project! project-id name color))
+  (POST "/add/:client-id" [client-id name color] (add-project! client-id name color)))
 
 (defroutes period-routes
   (GET "/:id" [id user-id] (text-html (layout/display-edit-period (first (period/by-id {:user_id user-id :id id} db-spec))
@@ -121,7 +127,7 @@
   (context "/period" request (friend/wrap-authorize period-routes #{security/user}))
   (context "/report" request (friend/wrap-authorize report-routes #{security/user}))      
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
-  (rfn request (-> {:body  (layout/display-not-found request)} (status 404))))
+  (rfn request (-> {:body  (layout/display-not-found request)} (status 404) text-html)))
 
 
 (defn wrap-add-user-id [handler uid-param]
