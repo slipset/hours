@@ -1,11 +1,11 @@
-(ns hours.report
+(ns hours.reports.report
     (:require [yesql.core :refer [defqueries]]
               [hours.time :as time]
               [clj-time.coerce :as c]
               [clj-time.core :as t]
               [clj-time.format :as f]))
 
-(defqueries "hours/report.sql")
+(defqueries "hours/reports/report.sql")
 
 
 

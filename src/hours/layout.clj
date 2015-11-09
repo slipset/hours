@@ -12,22 +12,6 @@
       [hours.security :as security]
       ))
 
-(defn basic-date [dt]
-  (f/unparse (f/formatters :basic-date) dt))
-
-(defn basic-day [dt]
-  (f/unparse (f/formatter "E MMM dd" ) dt))
-
-(defn display-week-chooser [client-id start end]
-  (let [prev-week (basic-date (time/prev-week start))
-        next-week  (basic-date (time/next-week end))]
-    [:ul.pull-left.pagination
-     [:li [:a {:href (str  "/report/by-week/" client-id "/" prev-week)} "<"]]
-     (if (= start (time/prev-monday (t/now)))
-       [:li [:span {:style "color: #777"} "This week"] ]
-       (list  [:li [:span  {:style "color: #777"} (str (f/unparse time/display-date-formatter start) " - " (f/unparse time/display-date-formatter end))]]
-              [:li [:a {:href (str  "/report/by-week/" client-id "/" next-week)} ">"]]))]))
-
 (defn display-project [project client color]
   [:h5 {:style "margin-top: 0px; margin-bottom: 0px;"} [:span {:style (str "padding:2px;background-color:#" color)} project] "&nbsp;" [:small client]])
 
@@ -51,31 +35,7 @@
    [:td (display-project (:name project) (get-in project [:client :name]) (:color project))]
    (map (partial display-project-day report project) (time/week period-start))])
 
-(defn display-day-total [report dt]
-  [:td  (->> report 
-             (keep (fn [[k v]] (when (= (:period-start k) dt) v)))
-             (flatten)
-             (reduce sum 0)
-             (time/format-minutes))])
 
-(defn display-weekly-report [{:keys [client-id report grand-total date clients projects period-start period-end]}]
-  (let [date-str (basic-date period-start)]
-    [:div
-     [:h1 "Weekly report" [:span.small.pull-right (display-week-chooser client-id period-start period-end)] ]    
-     [:table.table
-      [:tbody
-       [:tr
-        [:th.dropdown  [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
-                                            :aria-haspopup "true" :aria-expanded "false"} "Project" [:span.caret]]
-         [:ul.dropdown-menu
-          (map (partial display-client-li date-str) clients)]]
-        (map (fn [dt] [:th (basic-day dt)]) (time/week period-start))
-        [:th.text-right "Total"]]
-       (map (partial display-project-week report period-start) projects)
-       [:tr
-        [:td "&nbsp;"]
-        (map (partial display-day-total report) (time/week period-start))
-        [:td.text-right (time/format-minutes grand-total)]]]]]))
 
 
 (defn display-edit-period [period projects]

@@ -6,6 +6,12 @@
 
 (def display-date-formatter (f/formatter "MMM dd"))
 
+(defn basic-date [dt]
+  (f/unparse (f/formatters :basic-date) dt))
+
+(defn basic-day [dt]
+  (f/unparse (f/formatter "E MMM dd" ) dt))
+
 (defn trunc-seconds [dt]
   (-> dt
       (t/minus (t/seconds (t/second dt)))
