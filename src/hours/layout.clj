@@ -39,10 +39,6 @@
     [:input.form-control {:type "text" :name "end" :id "end" :value (when-let [end (:period_end period)] (time/->hh:mm-str (c/from-sql-date end)))}]]
    [:button.btn.btn-default {:type "submit"} "Go!"]])
 
-
-
-
-
 (defn include-styling []
   (list [:script {:src "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"}]
         (include-css  "/css/bootstrap.min.css" "/css/bootstrap-social.css" "/css/font-awesome.min.css"
@@ -95,26 +91,6 @@
              [:div.col-lg-4.col-lg-offset-4.col-md-4.col-md-offset-4.col-sm-6.col-sm-offset-3
               [:a.btn.btn-block.btn-social.btn-google {:href  "/user/"}
                [:i.fa.fa-google] "Sign in with Google" ]]]))
-
-(defn display-clients [clients]
-  (list [:table.table
-         [:tbody
-          [:tr
-           [:th "Name"]
-           [:th "&nbsp;"]]
-          (for [client clients]
-            [:tr
-             [:td (:name client)]
-             [:td [:a {:href (str "/project/add/" (:id client))} "Add project"] " | " [:a {:href (str "/client/" (:id client) "/projects")} "Show projects"]]])]]
-        [:div [:a {:href "/client/add"} "Add client"]]))
-
-(defn display-add-client []
-  [:form {:method "POST" :action "/client/add"}
-   (anti-forgery-field)
-   [:div.input-group
-    [:input.form-control {:type "text" :name "name" :placeholder "Client name..."}]
-     [:span.input-group-btn
-      [:button.btn.btn-default {:type "submit"} "Add"]]]])
 
 
 (defn display-not-found [request]

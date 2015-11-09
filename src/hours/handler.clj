@@ -23,18 +23,14 @@
       [hours.prjct :as prjct]
       [hours.reports.routes :as report]
       [hours.registration.routes :as registration]
-      [hours.projects.routes :as projects]      
+      [hours.projects.routes :as projects]
+      [hours.clients.routes :as clients]                  
       [hours.migrations :as migrations]
       [hours.security :as security]
       [environ.core :refer [env]])
     (:gen-class)) 
 
 (def db-spec {:connection {:connection-uri (env :jdbc-database-url)}})
-
-(defn add-client! [user-id name]
-  (client/add-client<! {:name name :user_id user-id} db-spec)
-  (ring.util.response/redirect "/client/"))
-
 
 (defn edit-period! [user-id id date start end description project-id]
   (period/edit-period! db-spec user-id id date start end description project-id)
@@ -44,19 +40,9 @@
   (period/delete-period! db-spec user-id id)
   (ring.util.response/redirect "/user/register/start"))
 
-(defn show-projects [user-id client-id]
-  (layout/display-projects (prjct/user-client-projects {:user_id user-id :client_id client-id} db-spec)))
-
 (defn text-html [resp]
   (-> (response resp)
       (header "Content-type" "text/html; charset=utf-8")))
-
-(defroutes client-routes
-  (GET "/" [user-id] (text-html (layout/display-clients (client/user-clients {:user_id user-id} db-spec))))
-  (GET "/:client-id/projects" [client-id user-id] (text-html (show-projects user-id client-id)))
-  (GET "/add" [] (text-html (layout/display-add-client)))
-  (POST "/add" [name user-id] (add-client! user-id name)))
-
 
 (defroutes period-routes
   (GET "/:id" [id user-id] (text-html (layout/display-edit-period (first (period/by-id {:user_id user-id :id id} db-spec))
@@ -68,7 +54,7 @@
   (GET "/" [user-id] (if (empty? user-id) (text-html (layout/render-login)) (redirect "/user")))
   (GET "/status" request (layout/display-status-page request))
   (context "/user" request (friend/wrap-authorize registration/user-routes #{security/user}))
-  (context "/client" request (friend/wrap-authorize client-routes #{security/user}))
+  (context "/client" request (friend/wrap-authorize clients/client-routes #{security/user}))
   (context "/project" request (friend/wrap-authorize projects/project-routes #{security/user}))
   (context "/period" request (friend/wrap-authorize period-routes #{security/user}))
   (context "/report" request (friend/wrap-authorize report/report-routes #{security/user}))      
