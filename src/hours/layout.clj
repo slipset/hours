@@ -1,43 +1,11 @@
 (ns hours.layout
     (:require
-      [hiccup.core :refer [html ]]
       [hiccup.form :refer [select-options ]]      
       [hiccup.page :refer [html5 include-js include-css]]
       [ring.util.anti-forgery :refer [anti-forgery-field]]
       [ring.util.response]
       [clj-time.core :as t]
-      [clj-time.format :as f]
-      [clj-time.coerce :as c]      
-      [hours.time :as time]
-      [hours.security :as security]
       ))
-
-(defn display-project [project client color]
-  [:h5 {:style "margin-top: 0px; margin-bottom: 0px;"} [:span {:style (str "padding:2px;background-color:#" color)} project] "&nbsp;" [:small client]])
-
-(defn display-edit-period [period projects]
-  [:form {:method "POST" :action (str "/period/" (:id period))}
-   [:div.form-group
-    [:label {:for "date"} "Date"]
-    [:input.form-control {:type "text" :name "date"
-                          :id "date" :value (time/->date-str (c/from-sql-time (:period_start period)))}]]
-   [:div.form-group
-    [:label {:for "description"} "Description"]
-    [:input.form-control {:type "text" :name "description" :id "description" :value (:description period)}]]
-
-   [:div.form-group
-    [:label {:for "project"} "Project"]
-    [:select.form-control {:name "project-id" :id "project"}
-     (map (fn [p] [:option {:value (:id p) :selected (= (:name p) (:name period))} (str (:name p) " - " (:name_2 p))]) projects)
-     ]]
-   
-   [:div.form-group
-    [:label {:for "start"} "Start"]
-    [:input.form-control {:type "text" :name "start" :id "start" :value (time/->hh:mm-str (c/from-date (:period_start period)))}]]
-   [:div.form-group
-    [:label {:for "end"} "End"]
-    [:input.form-control {:type "text" :name "end" :id "end" :value (when-let [end (:period_end period)] (time/->hh:mm-str (c/from-sql-date end)))}]]
-   [:button.btn.btn-default {:type "submit"} "Go!"]])
 
 (defn include-styling []
   (list [:script {:src "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"}]

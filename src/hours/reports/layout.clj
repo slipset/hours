@@ -47,7 +47,7 @@
    (map (partial display-project-day report project) (time/week period-start))])
 
 (defn display-weekly-report [{:keys [client-id report grand-total date clients projects period-start period-end]}]
-  (let [date-str (basic-date period-start)]
+  (let [date-str (time/basic-date period-start)]
     [:div
      [:h1 "Weekly report" [:span.small.pull-right (display-week-chooser client-id period-start period-end)] ]    
      [:table.table
