@@ -23,6 +23,7 @@
       [hours.prjct :as prjct]
       [hours.reports.routes :as report]
       [hours.registration.routes :as registration]
+      [hours.projects.routes :as projects]      
       [hours.migrations :as migrations]
       [hours.security :as security]
       [environ.core :refer [env]])
@@ -34,13 +35,6 @@
   (client/add-client<! {:name name :user_id user-id} db-spec)
   (ring.util.response/redirect "/client/"))
 
-(defn add-project! [client-id name color]
-  (prjct/add<! {:name name :client_id client-id :color color} db-spec)
-  (ring.util.response/redirect "/project/"))
-
-(defn edit-project! [project-id name color]
-  (prjct/update! {:name name :project_id project-id :color color} db-spec)
-  (ring.util.response/redirect "/project/"))
 
 (defn edit-period! [user-id id date start end description project-id]
   (period/edit-period! db-spec user-id id date start end description project-id)
@@ -63,12 +57,6 @@
   (GET "/add" [] (text-html (layout/display-add-client)))
   (POST "/add" [name user-id] (add-client! user-id name)))
 
-(defroutes project-routes
-  (GET "/" [user-id] (text-html (layout/display-projects (prjct/user-projects {:user_id user-id} db-spec))))
-  (GET "/add/:client-id" [client-id user-id] (text-html (layout/display-add-project (first (client/user-client {:user_id user-id :client_id client-id} db-spec)))))
-  (GET "/edit/:project-id" [project-id user-id] (text-html (layout/display-edit-project (first (prjct/user-project {:user_id user-id :project_id project-id} db-spec)))))
-  (POST "/edit/:project-id" [project-id name color] (edit-project! project-id name color))
-  (POST "/add/:client-id" [client-id name color] (add-project! client-id name color)))
 
 (defroutes period-routes
   (GET "/:id" [id user-id] (text-html (layout/display-edit-period (first (period/by-id {:user_id user-id :id id} db-spec))
@@ -81,7 +69,7 @@
   (GET "/status" request (layout/display-status-page request))
   (context "/user" request (friend/wrap-authorize registration/user-routes #{security/user}))
   (context "/client" request (friend/wrap-authorize client-routes #{security/user}))
-  (context "/project" request (friend/wrap-authorize project-routes #{security/user}))
+  (context "/project" request (friend/wrap-authorize projects/project-routes #{security/user}))
   (context "/period" request (friend/wrap-authorize period-routes #{security/user}))
   (context "/report" request (friend/wrap-authorize report/report-routes #{security/user}))      
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
