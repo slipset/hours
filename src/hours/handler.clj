@@ -2,7 +2,7 @@
     (:require
       [ring.middleware.file :refer [wrap-file]]
       [ring.adapter.jetty :refer [run-jetty]]
-      [ring.util.response :refer [response redirect header]]      
+      [ring.util.response :refer [response redirect header content-type]]      
       [compojure.core :refer :all]
       [compojure.route :as route]
       [compojure.handler :as handler]
@@ -25,12 +25,8 @@
 
 (def db-spec {:connection {:connection-uri (env :jdbc-database-url)}})
 
-(defn text-html [resp]
-  (-> (response resp)
-      (header "Content-type" "text/html; charset=utf-8")))
-
 (defroutes app-routes
-  (GET "/" [user-id] (if (empty? user-id) (text-html (layout/render-login)) (redirect "/user")))
+  (GET "/" [user-id] (if (empty? user-id) (layout/render-login) (redirect "/user")))
   (GET "/status" request (layout/display-status-page request))
   (context "/user" request (friend/wrap-authorize registration/user-routes #{security/user}))
   (context "/client" request (friend/wrap-authorize clients/client-routes #{security/user}))
@@ -50,7 +46,10 @@
 
 (defn wrap-page-template [handler]
   (fn [request]
-    (update-in (handler request) [:body] (layout/get-html5 (security/user-info request)))))
+    (let [response (update-in (handler request) [:body] (layout/get-html5 (security/user-info request)))]
+      (if (.startsWith (:body response) "<!DOCTYPE html>")
+        (content-type response  "text/html; charset=utf-8")
+        response))))
 
 (def app
   (-> #'app-routes

@@ -41,15 +41,12 @@
      (show-stop (period/by-user {:user_id user-id} db)
                 (:id unstopped) (:description unstopped) (:name unstopped) projects))))
 
-(defn text-html [resp]
-  (-> (response resp)
-      (header "Content-type" "text/html; charset=utf-8")))
 
 (defroutes user-routes
   (GET "/" request (redirect "/user/register/start"))
 ;  (GET "/status" request (layout/display-status-page request))
-  (GET "/register/stop/:period-id" [user-id db user-id period-id] (text-html (show-start-stop db user-id period-id)))
-  (GET "/register/start" [user-id db] (text-html (show-start-stop db user-id)))
+  (GET "/register/stop/:period-id" [user-id db user-id period-id] (response (show-start-stop db user-id period-id)))
+  (GET "/register/start" [user-id db] (response (show-start-stop db user-id)))
   (POST "/register/start" [user-id db project-id description date] (start! db user-id description project-id date))
   (POST "/register/stop" [user-id db period-id] (stop! db user-id period-id)))
 
