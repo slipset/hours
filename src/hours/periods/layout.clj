@@ -21,9 +21,9 @@
    
    [:div.form-group
     [:label {:for "start"} "Start"]
-    [:input.form-control {:type "text" :name "start" :id "start" :value (time/->hh:mm-str (c/from-date (:period_start period)))}]]
+    [:input.form-control {:type "time" :name "start" :id "start" :value (time/->hh:mm-str (c/from-date (:period_start period)))}]]
    [:div.form-group
     [:label {:for "end"} "End"]
-    [:input.form-control {:type "text" :name "end" :id "end" :value (when-let [end (:period_end period)] (time/->hh:mm-str (c/from-sql-date end)))}]]
+    [:input.form-control {:type "time" :name "end" :id "end" :value (when-let [end (:period_end period)] (time/->hh:mm-str (c/from-sql-date end)))}]]
    [:button.btn.btn-default {:type "submit"} "Go!"]])
 
