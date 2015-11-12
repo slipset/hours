@@ -5,7 +5,6 @@
       [hours.reports.layout :as layout]
       [hours.reports.report :as report]))
 
-
 (defroutes report-routes
   (GET "/by-week" r (redirect "/report/by-week/:all/:this"))
   (GET "/by-week/:client-id/:date" [client-id date user-id db] (response (layout/display-weekly-report

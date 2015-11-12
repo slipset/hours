@@ -15,52 +15,56 @@
         minutes (t/in-minutes (t/interval start stop))]
     (+ acc minutes)))
 
-(defn display-client-li [date client]
-  [:li [:a {:href (str "/report/by-week/" (:id client) "/" date) } (:name client)]])
+(defn week-url [client-id week]
+  (str  "/report/by-week/" client-id "/" week))
 
-(defn display-day-total [report dt]
-  [:td  (->> report 
-             (keep (fn [[k v]] (when (= (:period-start k) dt) v)))
-             (flatten)
-             (reduce sum 0)
-             (time/format-minutes))])
+(defn display-client-li [date client]
+  [:li [:a {:href (week-url (:id client) date) } (:name client)]])
+
+(defn display-day-total [day-total]
+  [:td  (time/format-minutes day-total)])
 
 (defn display-week-chooser [client-id start end]
   (let [prev-week (time/basic-date (time/prev-week start))
-        next-week  (time/basic-date (time/next-week end))]
+        next-week  (time/basic-date (time/next-week end))
+        prev-url (week-url client-id prev-week)]
     [:ul.pull-left.pagination
-     [:li [:a {:href (str  "/report/by-week/" client-id "/" prev-week)} "<"]]
+     [:li [:a {:href prev-url} "<"]]
      (if (= start (time/prev-monday (t/now)))
        [:li [:span {:style "color: #777"} "This week"] ]
        (list  [:li [:span  {:style "color: #777"} (str (f/unparse time/display-date-formatter start) " - " (f/unparse time/display-date-formatter end))]]
-              [:li [:a {:href (str  "/report/by-week/" client-id "/" next-week)} ">"]]))]))
+              [:li [:a {:href (week-url client-id next-week)} ">"]]))]))
 
-(defn display-project-day [report project dt]
-  (let [client (:client project)
-        key {:period-start dt :project (dissoc project :client :color) :client client}
-        periods (get report key)]
-    [:td  (time/format-minutes (reduce sum 0 periods))]))
 
-(defn display-project-week [report period-start project]
-  [:tr
-   [:td (display-project (:name project) (get-in project [:client :name]) (:color project))]
-   (map (partial display-project-day report project) (time/week period-start))])
+(defn display-project-week [[project days]]
+    [:tr
+     [:td (display-project (get-in project [:project :name])
+                           (get-in project [:client :name])
+                           (get-in project [:project :color]))]
+     (map (fn [d] [:td  (time/format-minutes (:total d))])  days)])
 
-(defn display-weekly-report [{:keys [client-id report grand-total date clients projects period-start period-end]}]
-  (let [date-str (time/basic-date period-start)]
-    [:div
-     [:h1 "Weekly report" [:span.small.pull-right (display-week-chooser client-id period-start period-end)] ]    
+(defn display-weekly-report [{:keys [client-id report day-totals grand-total date clients projects period-start period-end]}]
+  (let [date-str (time/basic-date period-start)
+        week (time/week period-start)
+        week-chooser (display-week-chooser client-id period-start period-end)
+        client-dropdown (map (partial display-client-li date-str) clients)
+        week-days (map (fn [dt] [:th (time/basic-day dt)]) week)
+        project-week (map display-project-week report)
+        day-totals (map display-day-total day-totals)
+        total-hours (time/format-minutes grand-total)]
+   [:div
+     [:h1 "Weekly report" [:span.small.pull-right week-chooser] ]    
      [:table.table
       [:tbody
        [:tr
         [:th.dropdown  [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
                                             :aria-haspopup "true" :aria-expanded "false"} "Project" [:span.caret]]
          [:ul.dropdown-menu
-          (map (partial display-client-li date-str) clients)]]
-        (map (fn [dt] [:th (time/basic-day dt)]) (time/week period-start))
+          client-dropdown]]
+        week-days
         [:th.text-right "Total"]]
-       (map (partial display-project-week report period-start) projects)
-       [:tr
-        [:td "&nbsp;"]
-        (map (partial display-day-total report) (time/week period-start))
-        [:td.text-right (time/format-minutes grand-total)]]]]]))
+       project-week
+         [:tr
+          [:td "&nbsp;"]
+          day-totals
+          [:td.text-right total-hours]]]]]))
