@@ -7,14 +7,11 @@
 
 (defqueries "hours/reports/report.sql")
 
-
-
 (defn by-week [db-spec user-id week-start week-end]
   (by-dates {:user_id user-id :period_start week-start :period_end week-end} db-spec))
 
 (defn by-week-and-client [db-spec user-id client-id  week-start week-end]
   (by-client-dates {:user_id user-id :client_id client-id :period_start week-start :period_end week-end} db-spec))
-
 
 (defn get-week-start [date]
   (time/prev-monday (if (= date ":this")

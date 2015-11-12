@@ -9,11 +9,6 @@
   [:h5 {:style "margin-top: 0px; margin-bottom: 0px;"}
    [:span {:style (str "padding:2px;background-color:#" color)} project] "&nbsp;" [:small client]])
 
-(defn sum [acc period]
-  (let [start (c/from-sql-time (:period_start period))
-        stop (c/from-sql-time (:period_end period))
-        minutes (t/in-minutes (t/interval start stop))]
-    (+ acc minutes)))
 
 (defn week-url [client-id week]
   (str  "/report/by-week/" client-id "/" week))
@@ -22,7 +17,7 @@
   [:li [:a {:href (week-url (:id client) date) } (:name client)]])
 
 (defn display-day-total [day-total]
-  [:td  (time/format-minutes day-total)])
+  [:td (time/format-minutes day-total)])
 
 (defn display-week-chooser [client-id start end]
   (let [prev-week (time/basic-date (time/prev-week start))
@@ -32,16 +27,16 @@
      [:li [:a {:href prev-url} "<"]]
      (if (= start (time/prev-monday (t/now)))
        [:li [:span {:style "color: #777"} "This week"] ]
-       (list  [:li [:span  {:style "color: #777"} (str (f/unparse time/display-date-formatter start) " - " (f/unparse time/display-date-formatter end))]]
+       (list  [:li [:span  {:style "color: #777"} (str (f/unparse time/display-date-formatter start)
+                                                       " - " (f/unparse time/display-date-formatter end))]]
               [:li [:a {:href (week-url client-id next-week)} ">"]]))]))
-
 
 (defn display-project-week [[project days]]
     [:tr
      [:td (display-project (get-in project [:project :name])
                            (get-in project [:client :name])
                            (get-in project [:project :color]))]
-     (map (fn [d] [:td  (time/format-minutes (:total d))])  days)])
+     (map (fn [d] [:td (time/format-minutes (:total d))])  days)])
 
 (defn display-weekly-report [{:keys [client-id report day-totals grand-total date clients projects period-start period-end]}]
   (let [date-str (time/basic-date period-start)
