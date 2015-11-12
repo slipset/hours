@@ -46,8 +46,7 @@
          [:input.form-control {:type "text" :name "description" :placeholder "What are you doing?"}]]
         [:select.form-control {:name "project-id"}
          (map (fn [p] [:option {:value (:id p)} (str (:name p) " - " (:name_2 p))]) projects)
-         ]
-        [:script "$('#date-container').datepicker({ format: 'dd/mm', weekStart: 1, calendarWeeks: true, autoclose: true, todayHighlight: true, endDate: 'today', orientation: 'top left'});" ])
+         ])
        (list
         [:input {:type "hidden" :name "period-id" :value (str period-id)}]
         [:div.input-group-btn {:style "width: 30%"}
