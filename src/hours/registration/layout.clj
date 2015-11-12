@@ -36,6 +36,7 @@
 (defn start-stop [action period-id description project projects content]
   [:div.row
    [:form {:method "POST" :action (str "/user/register/" action) }
+    [:style " ::-webkit-inner-spin-button { display: none; }"]
     [:div.input-group
      (if (= action "start")
        (list
