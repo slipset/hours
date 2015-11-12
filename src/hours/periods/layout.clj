@@ -2,7 +2,7 @@
     (:require
       [hours.time :as time]
       [clj-time.coerce :as c]
-      [clj-time.time :as t]))
+      [clj-time.core :as t]))
 
 (defn display-edit-period [period projects]
   [:form {:method "POST" :action (str "/period/" (:id period))}
