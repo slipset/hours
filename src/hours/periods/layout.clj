@@ -1,14 +1,15 @@
 (ns hours.periods.layout
     (:require
       [hours.time :as time]
-      [clj-time.coerce :as c]))
+      [clj-time.coerce :as c]
+      [clj-time.time :as t]))
 
 (defn display-edit-period [period projects]
   [:form {:method "POST" :action (str "/period/" (:id period))}
    [:div.form-group
     [:label {:for "date"} "Date"]
-    [:input.form-control {:type "text" :name "date"
-                          :id "date" :value (time/->date-str (c/from-sql-time (:period_start period)))}]]
+    [:input.form-control {:type "date" :name "date"
+                          :id "date" :max (time/->date-str (t/now)) :value (time/->date-str (c/from-sql-time (:period_start period)))}]]
    [:div.form-group
     [:label {:for "description"} "Description"]
     [:input.form-control {:type "text" :name "description" :id "description" :value (:description period)}]]

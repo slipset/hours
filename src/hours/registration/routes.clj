@@ -12,7 +12,7 @@
 
 (defn start! [db user-id description project-id date]
   (let [period-id (period/start! db user-id description project-id
-                                 (time/add-now (time/add-this-year (f/parse (f/formatter "dd/MM") date))))]
+                                 (time/add-now (f/parse time/custom-formatter date)))]
     (ring.util.response/redirect (str "/user/register/stop/" period-id))))
 
 (defn stop! [db user-id period-id]
@@ -40,7 +40,6 @@
          projects (prjct/user-projects {:user_id user-id} db)]
      (show-stop (period/by-user {:user_id user-id} db)
                 (:id unstopped) (:description unstopped) (:name unstopped) projects))))
-
 
 (defroutes user-routes
   (GET "/" request (redirect "/user/register/start"))

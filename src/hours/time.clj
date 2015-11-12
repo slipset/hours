@@ -2,7 +2,7 @@
     (require  [clj-time.core :as t]
               [clj-time.format :as f]))
 
-(def custom-formatter (f/formatter "dd/MM-yy"))
+(def custom-formatter (f/formatter "yyyy-MM-dd"))
 
 (def display-date-formatter (f/formatter "MMM dd"))
 
@@ -69,7 +69,7 @@
 (defn ->dt
   ([date hour] (->dt date hour (t/time-zone-for-id "CET")))
   ([date hour tz] 
-   (let [fmt (f/with-zone (f/formatter "dd/MM-yyHH:mm") tz)]
+   (let [fmt (f/with-zone (f/formatter "yyyy-MM-ddHH:mm") tz)]
      (f/parse fmt (str date hour)))))
 
 (defn find-total-by-day [[date periods]]

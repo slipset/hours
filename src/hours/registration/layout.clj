@@ -40,7 +40,7 @@
      (if (= action "start")
        (list
         [:div.input-group-btn
-         [:input.form-control {:type "text" :style "width: 5em" :name "date" :id "date-container" :value (time/->date-dd.mm (t/now))}]]
+         [:input.form-control {:type "date" :style "width: 10em" :name "date" :value (time/->date-str (t/now)) :max (time/->date-str (t/now))} ]]
         [:div.input-group-btn {:style "width: 30%"}
          [:input.form-control {:type "text" :name "description" :placeholder "What are you doing?"}]]
         [:select.form-control {:name "project-id"}
