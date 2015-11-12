@@ -6,6 +6,7 @@
 
 (defn display-edit-period [period projects]
   [:form {:method "POST" :action (str "/period/" (:id period))}
+   [:style " ::-webkit-inner-spin-button { display: none; }"]
    [:div.form-group
     [:label {:for "date"} "Date"]
     [:input.form-control {:type "date" :name "date"
