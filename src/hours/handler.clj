@@ -34,7 +34,7 @@
   (context "/period" request (friend/wrap-authorize periods/period-routes #{security/user}))
   (context "/report" request (friend/wrap-authorize report/report-routes #{security/user}))      
   (friend/logout (ANY "/logout" request (ring.util.response/redirect "/")))
-  (rfn request (-> {:body  (layout/display-not-found request)} (status 404) text-html)))
+  (rfn request (-> {:body  (layout/display-not-found request)} (status 404))))
 
 (defn wrap-add-user-id [handler uid-param]
   (fn [request]
