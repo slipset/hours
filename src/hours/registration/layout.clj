@@ -33,25 +33,37 @@
          [:td.text-right [:a {:href (str "/period/" (:id hour))} "edit"] " | "
           [:a {:href (str "/period/" (:id hour) "/delete")} "delete"]]]))]])
 
-(defn start-stop [action period-id description project projects content]
-  [:div.row
-   [:form {:method "POST" :action (str "/user/register/" action) }
-    [:style " ::-webkit-inner-spin-button { display: none; }"]
-    [:div.input-group
-     (if (= action "start")
-       (list
-        [:div.input-group-btn
-         [:input.form-control {:type "date" :style "width: 10em" :name "date" :value (time/->date-str (t/now)) :max (time/->date-str (t/now))} ]]
+(defn stop [{:keys [id name description]}]
+  (list [:input {:type "hidden" :name "period-id" :value (str id)}]
+        [:div.input-group-btn {:style "width: 30%"}
+         [:input.form-control {:type "text" :name "description" :value description :readonly "readonly"}]]
+        [:input.form-control {:type "text" :name "project" :value name :readonly "readonly"}]
+        [:span.input-group-btn [:button.btn.btn-danger {:type "submit" :value "stop"} "stop"]]))
+
+(defn start [projects now]
+  (list [:div.input-group-btn
+         [:input.form-control {:type "date" :style "width: 10em" :name "date"
+                               :value (time/->date-str now) :max (time/->date-str now)} ]]
         [:div.input-group-btn {:style "width: 30%"}
          [:input.form-control {:type "text" :name "description" :placeholder "What are you doing?"}]]
         [:select.form-control {:name "project-id"}
-         (map (fn [p] [:option {:value (:id p)} (str (:name p) " - " (:name_2 p))]) projects)
-         ])
-       (list
-        [:input {:type "hidden" :name "period-id" :value (str period-id)}]
-        [:div.input-group-btn {:style "width: 30%"}
-         [:input.form-control {:type "text" :name "description" :value description :readonly "readonly"}]]
-        [:input.form-control {:type "text" :name "project" :value project :readonly "readonly"}]))
-     (if (= action "start")
-       [:span.input-group-btn [:button.btn.btn-success {:type "submit" :value "start"} "start"]]
-       [:span.input-group-btn [:button.btn.btn-danger {:type "submit" :value "stop"} "stop"]])]] content])
+         (map (fn [p] [:option {:value (:id p)} (str (:name p) " - " (:name_2 p))]) projects)]
+        [:span.input-group-btn [:button.btn.btn-success {:type "submit" :value "start"} "start"]]))
+
+(defn display-form [action content]
+  [:form {:method "POST" :action (str "/user/register/" (name action)) }
+    [:style " ::-webkit-inner-spin-button { display: none; }"]
+    [:div.input-group
+     content]])
+
+(defn display-content [content form]
+  [:div.row form content])
+
+(defn do-display [action hours content]
+  (->> content
+       (display-form action)
+       (display-content (display-hours hours))))
+
+(defn display-registration
+  ([{:keys [hours projects now]} ] (do-display :start hours (start projects now)))
+  ([{:keys [hours projects now]} period] (do-display :stop hours (stop period))))
