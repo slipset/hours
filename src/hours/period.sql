@@ -9,7 +9,7 @@ update workday_period set period_end = :end where id = (:id)::uuid and workday_u
 select * from workday_period p1, workday_project p2 where p1.id = (:id)::uuid and p1.workday_user_id = (:user_id)::uuid and p1.workday_project_id = p2.id
 
 -- name: by-user
-select * from workday_period p1, workday_project p2, workday_client c where p1.workday_user_id = (:user_id)::uuid and p1.workday_project_id = p2.id and p2.workday_client_id = c.id order by p1.period_start desc
+select * from workday_period p1, workday_project p2, workday_client c where p1.workday_user_id = (:user_id)::uuid and p1.workday_project_id = p2.id and p2.workday_client_id = c.id and p1.period_start > current_date - interval '7 days' order by p1.period_start desc
 
 --name: update!
 update workday_period
