@@ -38,8 +38,10 @@
 
 (defn grand-total [report]
   (->> report
-       (mapcat (fn [[_ val]] val))
-       (reduce sum 0)))
+       (vals)
+       (mapcat identity)
+       (map :total)
+       (reduce + 0)))
 
 (defn get-client [line]
   {:id (get-in (first line) [:client :id]) :name (get-in (first line) [:client :name])})
