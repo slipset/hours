@@ -26,5 +26,11 @@
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                         [ring-mock "0.1.5"]]}
+   :test {:env {
+                :hours-oauth2-client-id "client_id"
+                :hours-oauth2-client-secret "sikrit"
+                :hours-uri "http://uri"
+                :jdbc-database-url "jdbc-url"
+                }}
    :uberjar {:aot :all}
    })
