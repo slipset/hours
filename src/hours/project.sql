@@ -1,3 +1,5 @@
+--name: user-projects-by-importance
+select c.name as client_name, p.id as project_id, p.name as project_name, sum(h.period_end - h.period_start) as worked from workday_period h, workday_project p, workday_client c where c.workday_user_id = (:user_id)::uuid and p.workday_client_id = c.id and h.workday_project_id = p.id group by client_name, project_id, project_name order by worked desc
 --name: user-projects
 select * from workday_project p, workday_client c where c.workday_user_id = (:user_id)::uuid and p.workday_client_id = c.id
 

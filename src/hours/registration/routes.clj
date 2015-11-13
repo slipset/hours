@@ -20,7 +20,7 @@
   (ring.util.response/redirect "/user/register/start"))
 
 (defn get-stuff [db user-id]
-  {:projects (prjct/user-projects {:user_id user-id} db)
+  {:projects (prjct/user-projects-by-importance {:user_id user-id} db)
    :hours (period/by-user {:user_id user-id} db)
    :now (t/now)})
 
@@ -31,12 +31,12 @@
 (defn show-start [db user-id]
   (let [unstopped (first (period/find-unstopped db user-id))]
     (if (seq unstopped)
-        (ring.util.response/redirect (str "/user/register/stop/" (:id unstopped)))
-        (layout/display-registration (get-stuff db user-id)))))
+      (ring.util.response/redirect (str "/user/register/stop/" (:id unstopped)))
+      (response (layout/display-registration (get-stuff db user-id))))))
 
 (defroutes user-routes
   (GET "/" request (redirect "/user/register/start"))
   (GET "/register/stop/:period-id" [user-id db user-id period-id] (response (show-stop db user-id period-id)))
-  (GET "/register/start" [user-id db] (response (show-start db user-id)))
+  (GET "/register/start" [user-id db] (show-start db user-id))
   (POST "/register/start" [user-id db project-id description date] (start! db user-id description project-id date))
   (POST "/register/stop" [user-id db period-id] (stop! db user-id period-id)))

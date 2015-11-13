@@ -47,7 +47,7 @@
         [:div.input-group-btn {:style "width: 30%"}
          [:input.form-control {:type "text" :name "description" :placeholder "What are you doing?"}]]
         [:select.form-control {:name "project-id"}
-         (map (fn [p] [:option {:value (:id p)} (str (:name p) " - " (:name_2 p))]) projects)]
+         (map (fn [p] [:option {:value (:project_id p)} (str (:project_name p) " - " (:client_name p))]) projects)]
         [:span.input-group-btn [:button.btn.btn-success {:type "submit" :value "start"} "start"]]))
 
 (defn display-form [action content]
