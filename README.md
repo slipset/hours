@@ -1,7 +1,5 @@
 # hours
-
-FIXME
-
+[![Build Status](https://travis-ci.org/slipset/hours.svg?branch=master)](https://travis-ci.org/slipset/hours)
 ## Prerequisites
 
 You will need [Leiningen][] 2.0.0 or above installed.
