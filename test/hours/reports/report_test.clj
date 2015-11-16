@@ -13,11 +13,11 @@
                             {:total 2}]))))
 
 (deftest test-decorate
-  (is (= #{:report :client-id :clients
-           :projects :period-start
-           :period-end :day-totals}  (->> (sut/decorate [(time-core/now) (time-core/now)] nil {})
-                                          (keys)
-                                          (into #{})))))
+  (is (= #{:report :client-id
+           :clients :projects
+           :period :day-totals}  (->> (sut/decorate [(time-core/now) (time-core/now)] nil {})
+                                      (keys)
+                                      (into #{})))))
 
 (deftest test-add-week-total
   (let [days [{:total 1} {:total 1} {:total 1}]

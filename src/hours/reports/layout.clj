@@ -21,8 +21,10 @@
 (defn display-day-total [day-total]
   [:td (time/format-minutes day-total)])
 
-(defn display-week-chooser [client-id start end]
-  (let [prev-week (time/basic-date (time/prev-week start))
+(defn display-week-chooser [client-id period]
+  (let [start (first period)
+        end (last period)
+        prev-week (time/basic-date (time/prev-week start))
         next-week  (time/basic-date (time/next-week end))
         prev-url (week-url client-id prev-week)]
     [:ul.pull-left.pagination
@@ -33,14 +35,16 @@
                                                        " - " (f/unparse time/display-date-formatter end))]]
               [:li [:a {:href (week-url client-id next-week)} ">"]]))]))
 
-(defn display-month-chooser [client-id start end]
-  (let [prev (time/basic-date (time/prev-month start))
-        next  (time/basic-date (time/next-month end))
+(defn display-month-chooser [client-id period]
+  (let [start (first period)
+        end (last period)
+        prev (time/basic-date (time/prev-week start))
+        next  (time/basic-date (time/next-week end))
         prev-url (month-url client-id prev)]
     [:ul.pull-left.pagination
      [:li [:a {:href prev-url} "<"]]
      (if (= start (time/prev-month (t/now)))
-       [:li [:span {:style "color: #777"} "This week"] ]
+       [:li [:span {:style "color: #777"} "This month"] ]
        (list  [:li [:span  {:style "color: #777"} (str (f/unparse time/display-date-formatter start)
                                                        " - " (f/unparse time/display-date-formatter end))]]
               [:li [:a {:href (month-url client-id next)} ">"]]))]))
@@ -52,12 +56,11 @@
                            (get-in project [:project :color]))]
      (map (fn [d] [:td (time/format-minutes (:total d))])  days)])
 
-(defn display-weekly-report [{:keys [client-id report day-totals date clients projects period-start period-end]}]
-  (let [date-str (time/basic-date period-start)
-        week (time/week period-start)
-        week-chooser (display-week-chooser client-id period-start period-end)
+(defn display-weekly-report [{:keys [client-id report day-totals date clients projects period]}]
+  (let [date-str (time/basic-date (first period))
+        week-chooser (display-week-chooser client-id period)
         client-dropdown (map (partial display-client-li date-str) clients)
-        week-days (map (fn [dt] [:th (time/basic-day dt)]) week)
+        week-days (map (fn [dt] [:th (time/basic-day dt)]) period)
         project-week (map display-project-week report)
         day-totals (map display-day-total day-totals)]
    [:div.row
@@ -76,16 +79,15 @@
           [:td "&nbsp;"]
           day-totals]]]]))
 
-(defn display-monthly-report [{:keys [client-id report day-totals date clients projects period-start period-end]}]
-  (let [date-str (time/basic-date period-start)
-        week (time/month period-start)
-        month-chooser (display-month-chooser client-id period-start period-end)
+(defn display-monthly-report [{:keys [client-id report day-totals date clients projects period]}]
+  (let [date-str (time/basic-date (first period))
+        month-chooser (display-month-chooser client-id period)
         client-dropdown (map (partial display-client-li date-str) clients)
-        week-days (map (fn [dt] [:th (time/basic-day dt)]) week)
+        week-days (map (fn [dt] [:th (time/basic-day dt)]) period)
         project-week (map display-project-week report)
         day-totals (map display-day-total day-totals)]
    [:div.row
-     [:h1 "Montly report" [:span.small.pull-right month-chooser] ]    
+     [:h1 "Monthly report" [:span.small.pull-right month-chooser] ]    
      [:table.table
       [:tbody
        [:tr

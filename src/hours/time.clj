@@ -65,6 +65,9 @@
 (defn add-days [dt i]
   (t/plus dt (t/days i)))
 
+(defn all-days [start end]
+  (map (partial add-days start) (range 0 (inc  (t/in-days (t/interval start end))))))
+
 (defn format-with-tz
   ([dt format] (format-with-tz dt format (t/time-zone-for-id "CET")))
   ([dt format tz-id]
@@ -80,7 +83,7 @@
   (map (partial add-days (prev-monday dt)) (range 0 7)))
 
 (defn month [dt]
-  (map (partial add-days (trunc-days dt)) (range 0 (inc  (t/in-days (apply t/interval (month-period dt)))))))
+  (apply all-days (month-period dt)))
 
 (defn ->hour-mins [interval]
   (let [minutes (t/in-minutes interval)]
