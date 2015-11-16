@@ -49,55 +49,45 @@
                                                        " - " (f/unparse time/display-date-formatter end))]]
               [:li [:a {:href (month-url client-id next)} ">"]]))]))
 
-(defn display-project-week [[project days]]
+(defn display-project-period [[project days]]
     [:tr
      [:td (display-project (get-in project [:project :name])
                            (get-in project [:client :name])
                            (get-in project [:project :color]))]
      (map (fn [d] [:td (time/format-minutes (:total d))])  days)])
 
+
+(defn display-report [kind period-chooser clients-dropdown period report day-totals]
+  [:div.row
+   [:h1 kind [:span.small.pull-right period-chooser] ]    
+   [:table.table
+    [:tbody
+     [:tr
+      [:th.dropdown  [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
+                                          :aria-haspopup "true" :aria-expanded "false"} "Project" [:span.caret]]
+       [:ul.dropdown-menu
+        clients-dropdown]]
+      (map (fn [dt] [:th (time/basic-day dt)]) period)
+      [:th.text-right "Total"]]
+     (map display-project-period report)
+     [:tr
+      [:td "&nbsp;"]
+      (map display-day-total day-totals)]]]])
+
 (defn display-weekly-report [{:keys [client-id report day-totals date clients projects period]}]
-  (let [date-str (time/basic-date (first period))
-        week-chooser (display-week-chooser client-id period)
-        client-dropdown (map (partial display-client-li date-str) clients)
-        week-days (map (fn [dt] [:th (time/basic-day dt)]) period)
-        project-week (map display-project-week report)
-        day-totals (map display-day-total day-totals)]
-   [:div.row
-     [:h1 "Weekly report" [:span.small.pull-right week-chooser] ]    
-     [:table.table
-      [:tbody
-       [:tr
-        [:th.dropdown  [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
-                                            :aria-haspopup "true" :aria-expanded "false"} "Project" [:span.caret]]
-         [:ul.dropdown-menu
-          client-dropdown]]
-        week-days
-        [:th.text-right "Total"]]
-       project-week
-         [:tr
-          [:td "&nbsp;"]
-          day-totals]]]]))
+  (let [date-str (time/basic-date (first period))]
+    (display-report "Weekly report"
+                    (display-week-chooser client-id period)
+                    (map (partial display-client-li date-str) clients)
+                    period
+                    report
+                    day-totals)))
 
 (defn display-monthly-report [{:keys [client-id report day-totals date clients projects period]}]
-  (let [date-str (time/basic-date (first period))
-        month-chooser (display-month-chooser client-id period)
-        client-dropdown (map (partial display-client-li date-str) clients)
-        week-days (map (fn [dt] [:th (time/basic-day dt)]) period)
-        project-week (map display-project-week report)
-        day-totals (map display-day-total day-totals)]
-   [:div.row
-     [:h1 "Monthly report" [:span.small.pull-right month-chooser] ]    
-     [:table.table
-      [:tbody
-       [:tr
-        [:th.dropdown  [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
-                                            :aria-haspopup "true" :aria-expanded "false"} "Project" [:span.caret]]
-         [:ul.dropdown-menu
-          client-dropdown]]
-        week-days
-        [:th.text-right "Total"]]
-       project-week
-         [:tr
-          [:td "&nbsp;"]
-          day-totals]]]]))
+  (let [date-str (time/basic-date (first period))]
+    (display-report "Monthly report"
+                    (display-month-chooser client-id period)
+                    (map (partial display-client-li date-str) clients)
+                    period
+                    report
+                    day-totals)))

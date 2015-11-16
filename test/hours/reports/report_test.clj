@@ -21,7 +21,7 @@
 
 (deftest test-add-week-total
   (let [days [{:total 1} {:total 1} {:total 1}]
-        result (sut/add-week-total days)]
+        result (sut/add-period-total days)]
     (is (= 4 (count result))
         (= 3 (:total (last result))))))
 

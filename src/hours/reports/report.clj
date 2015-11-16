@@ -71,7 +71,7 @@
        (map (fn [[k v]] (summarize v)))
        (add-missing-days (apply time/all-days period))
        (into [])
-       (add-week-total)))
+       (add-period-total)))
 
 (defn distinct-projects [report]
   (->> report
