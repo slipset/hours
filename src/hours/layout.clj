@@ -17,7 +17,7 @@
   [:li [:p.navbar-text (get userinfo "name") "&nbsp;" [:img {:src (get userinfo "picture") :width "20"}]]])
 
 (defmacro insert-sha []
-  (let [sha (slurp ".git/refs/heads/master")]
+  (let [sha (slurp "../../.git/refs/heads/master")]
     (.substring sha 0 6)))
 
 (defn render-footer []
