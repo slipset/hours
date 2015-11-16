@@ -11,8 +11,8 @@
 (defn include-styling []
   (list [:script {:src "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"}]
         (include-css  "/css/bootstrap.min.css" "/css/bootstrap-social.css" "/css/font-awesome.min.css"
-                      "/css/bootstrap-datepicker3.min.css" "/css/hours.css")
-        (include-js "/js/bootstrap.min.js" "/js/bootstrap-datepicker.min.js")))
+                      "/css/hours.css")
+        (include-js "/js/bootstrap.min.js")))
 
 (defn display-user-nav-bar [userinfo]
   [:li [:p.navbar-text (get userinfo "name") "&nbsp;" [:img {:src (get userinfo "picture") :width "20"}]]])
