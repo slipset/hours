@@ -18,7 +18,7 @@
   [:li [:p.navbar-text (get userinfo "name") "&nbsp;" [:img {:src (get userinfo "picture") :width "20"}]]])
 
 (defmacro insert-sha []
-  (pr-str env)
+  (println env)
   (when-let [sha (env :source_version)]
     (.substring sha 0 6)))
 
