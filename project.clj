@@ -4,7 +4,7 @@
    :repl-options {:init-ns hours.handler}
   :main  ^:skip-aot hours.handler  
   :min-lein-version "2.0.0"
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0-RC2"]
                  [ring/ring-jetty-adapter "1.4.0"]
                  [ring/ring-defaults "0.1.5"]
                  [compojure "1.4.0"]
