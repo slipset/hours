@@ -18,8 +18,7 @@
   [:li [:p.navbar-text (get userinfo "name") "&nbsp;" [:img {:src (get userinfo "picture") :width "20"}]]])
 
 (defmacro insert-sha []
-  (println env)
-  (when-let [sha (env :source_version)]
+  (when-let [sha (env :source-version)]
     (.substring sha 0 6)))
 
 (defn render-footer []
