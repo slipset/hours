@@ -4,13 +4,13 @@
               [clojure.test :refer :all]))
 
 (deftest test-week-total
-  (is (= 8 (sut/week-total [{:total 1}
-                            {:total 1}
-                            {:total 1}
-                            {:total 1}
-                            {:total 1}
-                            {:total 1}
-                            {:total 2}]))))
+  (is (= 8 (sut/period-total [{:total 1}
+                              {:total 1}
+                              {:total 1}
+                              {:total 1}
+                              {:total 1}
+                              {:total 1}
+                              {:total 2}]))))
 
 (deftest test-decorate
   (is (= #{:report :client-id
