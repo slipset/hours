@@ -17,7 +17,7 @@
 (defn display-user-nav-bar [userinfo]
   [:li [:p.navbar-text (get userinfo "name") "&nbsp;" [:img {:src (get userinfo "picture") :width "20"}]]])
 
-(defn insert-sha []
+(defmacro insert-sha []
   (when-let [sha (env :source_version)]
     (.substring sha 0 6)))
 
