@@ -74,7 +74,7 @@
   (fn [page] (f (list
                  [:head
                   [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0, user-scalable=no"}]
-                  [:title "hours"]
+                  [:title (env :heroku-app-name)]
                   (include-styling)]
                  [:body
                   (:navbar page) 
