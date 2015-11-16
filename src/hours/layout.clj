@@ -4,6 +4,7 @@
       [hiccup.page :refer [html5 include-js include-css]]
       [ring.util.anti-forgery :refer [anti-forgery-field]]
       [ring.util.response]
+      [environ.core           :refer [env]]
       [clj-time.core :as t]
       ))
 
@@ -16,8 +17,8 @@
 (defn display-user-nav-bar [userinfo]
   [:li [:p.navbar-text (get userinfo "name") "&nbsp;" [:img {:src (get userinfo "picture") :width "20"}]]])
 
-(defmacro insert-sha []
-  (let [sha (slurp "../../.git/refs/heads/master")]
+(defn insert-sha []
+  (let [sha (env :source_version)]
     (.substring sha 0 6)))
 
 (defn render-footer []
