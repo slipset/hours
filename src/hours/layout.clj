@@ -16,12 +16,16 @@
 (defn display-user-nav-bar [userinfo]
   [:li [:p.navbar-text (get userinfo "name") "&nbsp;" [:img {:src (get userinfo "picture") :width "20"}]]])
 
+(defmacro insert-sha []
+  (let [sha (slurp ".git/refs/heads/master")]
+    (.substring sha 0 6)))
+
 (defn render-footer []
   [:footer.footer {:role "contentinfo"}
      [:div.container
       [:hr
        [:p [:i.fa.fa-github] "&nbsp;"[:a {:href "https://github.com/slipset/"} "slipset"] "/"
-        [:a {:href "https://github.com/slipset/hours/"} "hours"] " | " [:i.fa.fa-twitter] [:a {:href "https://twitter.com/slipset/"} "slipset"]] ]]])
+        [:a {:href "https://github.com/slipset/hours/"} "hours"] " | " [:i.fa.fa-twitter] [:a {:href "https://twitter.com/slipset/"} "slipset"] " | sha:" (insert-sha)] ]]])
 
 (defn render-navbar
   ([] (render-navbar nil))
