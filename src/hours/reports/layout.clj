@@ -9,7 +9,6 @@
   [:h5 {:style "margin-top: 0px; margin-bottom: 0px;"}
    [:span {:style (str "padding:2px;background-color:#" color)} project] "&nbsp;" [:small client]])
 
-
 (defn week-url [client-id week]
   (str  "/report/by-week/" client-id "/" week))
 
@@ -46,7 +45,7 @@
         week-days (map (fn [dt] [:th (time/basic-day dt)]) week)
         project-week (map display-project-week report)
         day-totals (map display-day-total day-totals)]
-   [:div
+   [:div.row
      [:h1 "Weekly report" [:span.small.pull-right week-chooser] ]    
      [:table.table
       [:tbody

@@ -60,8 +60,7 @@
      :day (time/trunc-hours (c/from-sql-time (:period_start instant)))}))
 
 (defn week-total [days]
-  (println days)
-  (reduce #(+ %1 (:total %2)) 0  days))
+  (reduce #(+ %1 (:total %2)) 0 days))
 
 (defn add-week-total [days]
   (let [total (week-total days)]
@@ -90,15 +89,13 @@
     (apply map (fn [& days] (week-total days)) (vals report))
     '(0 0 0 0 0 0 0 0)))
 
-(defn decorate
-  ([[start end] report] (format start end nil report))
-  ([[start end] client-id report] {:report report
-                                   :client-id client-id
-                                   :clients (distinct-clients report)
-                                   :projects (distinct-projects report)
-                                   :period-start start
-                                   :period-end end
-                                   :day-totals (day-totals report)}))
+(defn decorate [[start end] client-id report] {:report report
+                                               :client-id client-id
+                                               :clients (distinct-clients report)
+                                               :projects (distinct-projects report)
+                                               :period-start start
+                                               :period-end end
+                                               :day-totals (day-totals report)})
 
 (defn weekly
   ([db-spec user-id [week-start week-end]] 

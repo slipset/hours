@@ -13,14 +13,15 @@
   (f/unparse (f/formatter "E MMM dd" ) dt))
 
 (defn trunc-seconds [dt]
-  (-> dt
-      (t/minus (t/seconds (t/second dt)))
-      (t/minus (t/millis (t/milli dt)))))
+  (some-> dt
+          (t/minus (t/seconds (t/second dt)))
+          (t/minus (t/millis (t/milli dt)))))
 
 (defn trunc-hours [dt]
-  (-> (trunc-seconds dt)
-      (t/minus (t/minutes (t/minute dt)))
-      (t/minus (t/hours (t/hour dt)))))
+  (some-> dt
+          (trunc-seconds)
+          (t/minus (t/minutes (t/minute dt)))
+          (t/minus (t/hours (t/hour dt)))))
 
 (defn prev-monday [dt]
   (trunc-hours (let [mon 1
