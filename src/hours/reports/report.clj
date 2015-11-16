@@ -36,13 +36,6 @@
         minutes (t/in-minutes (t/interval start stop))]
     (+ acc minutes)))
 
-(defn grand-total [report]
-  (->> report
-       (vals)
-       (mapcat identity)
-       (map :total)
-       (reduce + 0)))
-
 (defn get-client [line]
   {:id (get-in (first line) [:client :id]) :name (get-in (first line) [:client :name])})
 
@@ -66,11 +59,21 @@
     {:total (reduce sum 0 project-day)
      :day (time/trunc-hours (c/from-sql-time (:period_start instant)))}))
 
+(defn week-total [days]
+  (println days)
+  (reduce #(+ %1 (:total %2)) 0  days))
+
+(defn add-week-total [days]
+  (let [total (week-total days)]
+    (conj days {:total total} )))
+
 (defn daily-totals [project-period]
   (->> project-period
        (group-by #(time/trunc-hours (c/from-sql-time (:period_start %))))
        (map (fn [[k v]] (summarize v)))
-       (add-missing-days)))
+       (add-missing-days)
+       (into [])
+       (add-week-total)))
 
 (defn distinct-projects [report]
   (->> report
@@ -84,13 +87,12 @@
 
 (defn day-totals [report]
   (if (seq report)
-    (apply map (fn [& args] (reduce #(+ %1 (:total %2)) 0 args)) (vals report))
-    '(0 0 0 0 0 0 0)))
+    (apply map (fn [& days] (week-total days)) (vals report))
+    '(0 0 0 0 0 0 0 0)))
 
 (defn decorate
   ([[start end] report] (format start end nil report))
   ([[start end] client-id report] {:report report
-                                   :grand-total (grand-total report)
                                    :client-id client-id
                                    :clients (distinct-clients report)
                                    :projects (distinct-projects report)

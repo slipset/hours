@@ -38,15 +38,14 @@
                            (get-in project [:project :color]))]
      (map (fn [d] [:td (time/format-minutes (:total d))])  days)])
 
-(defn display-weekly-report [{:keys [client-id report day-totals grand-total date clients projects period-start period-end]}]
+(defn display-weekly-report [{:keys [client-id report day-totals date clients projects period-start period-end]}]
   (let [date-str (time/basic-date period-start)
         week (time/week period-start)
         week-chooser (display-week-chooser client-id period-start period-end)
         client-dropdown (map (partial display-client-li date-str) clients)
         week-days (map (fn [dt] [:th (time/basic-day dt)]) week)
         project-week (map display-project-week report)
-        day-totals (map display-day-total day-totals)
-        total-hours (time/format-minutes grand-total)]
+        day-totals (map display-day-total day-totals)]
    [:div
      [:h1 "Weekly report" [:span.small.pull-right week-chooser] ]    
      [:table.table
@@ -61,5 +60,4 @@
        project-week
          [:tr
           [:td "&nbsp;"]
-          day-totals
-          [:td.text-right total-hours]]]]]))
+          day-totals]]]]))
