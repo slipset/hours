@@ -52,7 +52,7 @@
           
           [:ul.dropdown-menu
            [:li [:a {:href "/report/by-week"} "Weekly"]]
-           [:li [:a {:href "/report/by-month"} "Montly"]]]]]
+           [:li [:a {:href "/report/by-month"} "Monthly"]]]]]
         [:ul.nav.navbar-nav.navbar-right
          (display-user-nav-bar logged-in-user)
          [:li [:a {:href "/logout"} [:span.glyphicon.glyphicon-log-out] "Logout"]]]
