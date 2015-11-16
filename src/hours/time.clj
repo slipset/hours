@@ -30,13 +30,29 @@
                    dt
                    (t/minus dt (t/days (dec today)))))))
 
+(defn trunc-days [dt]
+  (t/date-time (t/year dt) (t/month dt)))
+
 (defn week-period [dt]
   (let [mon (trunc-hours (prev-monday dt))]
-    [mon (-> (t/plus mon (t/days 7))
+    [mon (-> mon
+             (t/plus (t/days 7))
              (t/minus (t/millis 1)))]))
+
+(defn month-period [dt]
+  (let [start (trunc-days dt)]
+    [start (-> start
+               (t/plus (t/months 1))
+               (t/minus (t/millis 1)))]))
 
 (defn prev-week [mon]
   (t/minus mon (t/weeks 1)))
+
+(defn prev-month [mon]
+  (t/minus mon (t/months 1)))
+
+(defn next-month [mon]
+  (t/plus mon (t/months 1)))
 
 (defn today-at [[hour min]]
   (-> (t/today-at 00 00)
@@ -62,6 +78,9 @@
 
 (defn week [dt]
   (map (partial add-days (prev-monday dt)) (range 0 7)))
+
+(defn month [dt]
+  (map (partial add-days (trunc-days dt)) (range 0 (inc  (t/in-days (apply t/interval (month-period dt)))))))
 
 (defn ->hour-mins [interval]
   (let [minutes (t/in-minutes interval)]

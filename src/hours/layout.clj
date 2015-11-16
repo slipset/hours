@@ -51,7 +51,8 @@
                                :aria-haspopup "true" :aria-expanded "false"} "Reports" [:span.caret]]
           
           [:ul.dropdown-menu
-           [:li [:a {:href "/report/by-week"} "Weekly"]]]]]
+           [:li [:a {:href "/report/by-week"} "Weekly"]]
+           [:li [:a {:href "/report/by-month"} "Montly"]]]]]
         [:ul.nav.navbar-nav.navbar-right
          (display-user-nav-bar logged-in-user)
          [:li [:a {:href "/logout"} [:span.glyphicon.glyphicon-log-out] "Logout"]]]
