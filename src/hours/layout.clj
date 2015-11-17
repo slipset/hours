@@ -78,9 +78,10 @@
                   [:title (env :heroku-app-name)]
                   (include-styling)]
                  [:body
-                  (:navbar page) 
-                  [:div.container (:content page)]
-                  (:footer page)]))))
+                  [:div.container
+                    (:navbar page)    
+                    [:div (:content page)]
+                    (:footer page)]]))))
 
 (defn wrap-navbar [f user]
   (fn [page]
