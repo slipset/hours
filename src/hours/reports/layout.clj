@@ -58,7 +58,7 @@
 
 
 (defn display-report [kind period-chooser clients-dropdown period report day-totals]
-  [:div.row
+  [:div
    [:h1 kind [:span.small.pull-right period-chooser] ]    
    [:table.table
     [:tbody
