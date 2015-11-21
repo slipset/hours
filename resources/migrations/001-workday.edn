@@ -1,2 +1,2 @@
-{:up ["CREATE EXTENSION \"uuid-ossp\";"]
- :down ["DROP EXTENSION \"uuid-ossp\";"]}
+{:up ["CREATE TEMP TABLE checkUuid ( id uuid primary key  DEFAULT uuid_generate_v4())"]
+ :down ["DROP TABLE checkUuid"]}
