@@ -1,5 +1,7 @@
 # Created by https://www.gitignore.io/api/emacs,clojure
 
+.env
+
 ### Emacs ###
 # -*- mode: gitignore; -*-
 *~
