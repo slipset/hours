@@ -27,5 +27,5 @@
    [:div.form-group
     [:label {:for "end"} "End"]
     [:input.form-control {:type "time" :name "end" :id "end" :value (when-let [end (:period_end period)] (time/->hh:mm-str (c/from-sql-date end)))}]]
-   [:button.btn.btn-default {:type "submit"} "Go!"]])
+   [:button.btn.btn-success {:type "submit"} "Go!"]])
 
