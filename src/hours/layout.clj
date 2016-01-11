@@ -32,31 +32,30 @@
   ([] (render-navbar nil))
   ([logged-in-user]
    [:nav.navbar.navbar-inverse {:role "banner"}
-    [:div.container-fluid
-     [:div.navbar-header
-      (when logged-in-user
-        [:button.navbar-toggle {:type "button" :data-toggle "collapse" :data-target "#myNavbar"}
-         [:span.icon-bar]
-         [:span.icon-bar]
-         [:span.icon-bar]])
-      [:a.navbar-brand {:href "/"} "workday"]]
+    [:div.navbar-header
      (when logged-in-user
-       [:div.collapse.navbar-collapse {:id "myNavbar"}
-        [:ul.nav.navbar-nav
-         [:li [:a {:href "/user"} "Home"]]
-         [:li [:a {:href "/user/status"} "Status"]]
-         [:li [:a {:href "/client"} "Clients"]]
-         [:li.dropdown
-          [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
-                               :aria-haspopup "true" :aria-expanded "false"} "Reports" [:span.caret]]
-          
-          [:ul.dropdown-menu
-           [:li [:a {:href "/report/by-week"} "Weekly"]]
-           [:li [:a {:href "/report/by-month"} "Monthly"]]]]]
-        [:ul.nav.navbar-nav.navbar-right
-         (display-user-nav-bar logged-in-user)
-         [:li [:a {:href "/logout"} [:span.glyphicon.glyphicon-log-out] "Logout"]]]
-        ])]]))
+       [:button.navbar-toggle {:type "button" :data-toggle "collapse" :data-target "#myNavbar"}
+        [:span.icon-bar]
+        [:span.icon-bar]
+        [:span.icon-bar]])
+     [:a.navbar-brand {:href "/"} "workday"]]
+    (when logged-in-user
+      [:div.collapse.navbar-collapse {:id "myNavbar"}
+       [:ul.nav.navbar-nav
+        [:li [:a {:href "/user"} "Home"]]
+        [:li [:a {:href "/user/status"} "Status"]]
+        [:li [:a {:href "/client"} "Clients"]]
+        [:li.dropdown
+         [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
+                              :aria-haspopup "true" :aria-expanded "false"} "Reports" [:span.caret]]
+         
+         [:ul.dropdown-menu
+          [:li [:a {:href "/report/by-week"} "Weekly"]]
+          [:li [:a {:href "/report/by-month"} "Monthly"]]]]]
+       [:ul.nav.navbar-nav.navbar-right
+        (display-user-nav-bar logged-in-user)
+        [:li [:a {:href "/logout"} [:span.glyphicon.glyphicon-log-out] "Logout"]]]
+       ])]))
 
 (defn render-login []
   (list  [:div.page-header
@@ -74,14 +73,13 @@
 (defn wrap-page-template [f]
   (fn [page] (f (list
                  [:head
-                  [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0, user-scalable=no"}]
+                  [:meta {:name "viewport" :content "width=device-width"}]
                   [:title (env :heroku-app-name)]
                   (include-styling)]
                  [:body
-                  [:div.container
-                    (:navbar page)    
-                    [:div (:content page)]
-                    (:footer page)]]))))
+                  (:navbar page)
+                  (:content page)
+                  (:footer page)]))))
 
 (defn wrap-navbar [f user]
   (fn [page]

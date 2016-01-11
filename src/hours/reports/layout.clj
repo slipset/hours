@@ -59,8 +59,9 @@
 
 (defn display-report [kind period-chooser clients-dropdown period report day-totals]
   [:div
-   [:h1 kind [:span.small.pull-right period-chooser] ]    
-   [:table.table
+   [:h1 kind ]
+    [:span.small.pull-right period-chooser]
+   [:table.table 
     [:tbody
      [:tr
       [:th.dropdown  [:a.dropdown-toggle {:href "#" :data-toggle "dropdown" :role "button"
@@ -72,7 +73,8 @@
      (map display-project-period report)
      [:tr
       [:td "&nbsp;"]
-      (map display-day-total day-totals)]]]])
+      (map display-day-total day-totals)]]]
+   ])
 
 (defn display-weekly-report [{:keys [client-id report day-totals date clients projects period]}]
   (let [date-str (time/basic-date (first period))]

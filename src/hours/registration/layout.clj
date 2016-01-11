@@ -57,7 +57,7 @@
      content]])
 
 (defn display-content [content form]
-  [:div.row form content])
+  [:div form content])
 
 (defn do-display [action hours content]
   (->> content
