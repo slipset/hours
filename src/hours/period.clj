@@ -1,7 +1,7 @@
 (ns hours.period
     (:require [yesql.core :refer [defqueries]]
               [hours.prjct :as prjct]
-              [hours.time :as time]              
+              [hours.time :as time]
               [clj-time.coerce :as c]
               [clj-time.core :as t]))
 
